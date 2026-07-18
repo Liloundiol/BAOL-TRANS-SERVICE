@@ -1,0 +1,55 @@
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-page-header h1 {
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+}
+
+.admin-page-header p {
+  color: var(--color-gray-disabled);
+  font-size: 0.875rem;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background-color: var(--color-gray-light);
+}
+
+.text-primary { color: var(--color-primary); }
+.text-danger { color: #EF4444; }
+.mt-4 { margin-top: 1rem; }

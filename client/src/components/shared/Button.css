@@ -1,0 +1,103 @@
+.bts-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  border: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px; /* Large touch target for mobile first */
+}
+
+.bts-button:disabled {
+  background-color: var(--color-gray-disabled);
+  color: var(--color-white);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Modifiers */
+.bts-button-full {
+  width: 100%;
+}
+
+.bts-button-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  min-height: 36px;
+}
+
+.bts-button-large {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  min-height: 56px;
+}
+
+/* Primary Button */
+.bts-button-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.bts-button-primary:not(:disabled):hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(11, 110, 46, 0.25);
+}
+
+.bts-button-primary:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Secondary / Outline Button */
+.bts-button-secondary, .bts-button-outline {
+  background-color: var(--color-white);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.bts-button-secondary:not(:disabled):hover, .bts-button-outline:not(:disabled):hover {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(11, 110, 46, 0.25);
+}
+
+.bts-button-secondary:not(:disabled):active, .bts-button-outline:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Danger Button */
+.bts-button-danger {
+  background-color: #EF4444; /* Standard danger color */
+  color: var(--color-white);
+}
+
+.bts-button-danger:not(:disabled):hover {
+  background-color: #DC2626;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+.bts-button-danger:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Ghost Button */
+.bts-button-ghost {
+  background-color: transparent;
+  color: var(--color-primary);
+}
+
+.bts-button-ghost:not(:disabled):hover {
+  background-color: var(--color-gray-light);
+  transform: translateY(-2px);
+}
+
+.bts-button-ghost:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}

@@ -1,0 +1,190 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String?         @unique
+  passwordHash  String
+  phoneNumber   String          @unique
+  role          Role            @default(STUDENT)
+  createdAt     DateTime        @default(now())
+  firstName     String?
+  lastName      String?
+  loyalty       LoyaltyAccount?
+  notifications Notification[]
+  sentPackages  Package[]       @relation("SenderPackages")
+  reservations  Reservation[]
+}
+
+model Trip {
+  id             String          @id @default(uuid())
+  departure      String
+  destination    String
+  date           DateTime        @db.Date
+  time           DateTime        @db.Time(6)
+  price          Decimal
+  status         TripStatus      @default(ACTIVE)
+  boardingPoints BoardingPoint[]
+  buses          Bus[]
+  packages       Package[]
+}
+
+model Bus {
+  id           String        @id @default(uuid())
+  tripId       String
+  busNumber    String        @unique
+  capacity     Int           @default(13)
+  status       BusStatus     @default(AVAILABLE)
+  trip         Trip          @relation(fields: [tripId], references: [id])
+  reservations Reservation[]
+}
+
+model BoardingPoint {
+  id     String @id @default(uuid())
+  tripId String
+  name   String
+  time   String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}
+
+model Reservation {
+  id            String            @id @default(uuid())
+  userId        String
+  busId         String
+  seatNumber    Int
+  status        ReservationStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  boardingPoint String?
+  dropoffPoint  String?
+  payment       Payment?
+  bus           Bus               @relation(fields: [busId], references: [id])
+  user          User              @relation(fields: [userId], references: [id])
+  ticket        Ticket?
+
+  @@unique([busId, seatNumber])
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  reservationId     String?       @unique
+  packageId         String?       @unique
+  waveTransactionId String        @unique
+  amount            Decimal
+  status            PaymentStatus @default(COMPLETED)
+  paidAt            DateTime      @default(now())
+  package           Package?      @relation(fields: [packageId], references: [id])
+  reservation       Reservation?  @relation(fields: [reservationId], references: [id])
+}
+
+model Ticket {
+  id            String      @id @default(uuid())
+  reservationId String      @unique
+  ticketCode    String      @unique
+  qrCodeData    String
+  isUsed        Boolean     @default(false)
+  usedAt        DateTime?
+  generatedAt   DateTime    @default(now())
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean   @default(false)
+  type      NotifType @default(IN_APP)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model LoyaltyAccount {
+  id           String               @id @default(uuid())
+  userId       String               @unique
+  points       Int                  @default(0)
+  tier         LoyaltyTier          @default(BRONZE)
+  user         User                 @relation(fields: [userId], references: [id])
+  transactions LoyaltyTransaction[]
+}
+
+model LoyaltyTransaction {
+  id               String         @id @default(uuid())
+  loyaltyAccountId String
+  points           Int
+  description      String
+  createdAt        DateTime       @default(now())
+  account          LoyaltyAccount @relation(fields: [loyaltyAccountId], references: [id])
+}
+
+model Package {
+  id            String        @id @default(uuid())
+  senderId      String
+  tripId        String
+  receiverPhone String
+  receiverName  String
+  description   String
+  weight        Decimal
+  price         Decimal
+  status        PackageStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  sender        User          @relation("SenderPackages", fields: [senderId], references: [id])
+  trip          Trip          @relation(fields: [tripId], references: [id])
+  payment       Payment?
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  AGENT
+  CONTROLLER
+}
+
+enum TripStatus {
+  ACTIVE
+  ARCHIVED
+  CANCELLED
+}
+
+enum BusStatus {
+  AVAILABLE
+  FULL
+}
+
+enum ReservationStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum NotifType {
+  IN_APP
+  SMS
+  EMAIL
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+}
+
+enum PackageStatus {
+  PENDING
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}

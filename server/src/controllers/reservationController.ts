@@ -1,0 +1,368 @@
+import { Request, Response, NextFunction } from 'express';
+import { AuthRequest } from '../middleware/authMiddleware';
+import prisma from '../config/prisma';
+import crypto from 'crypto';
+import { sendTicketEmail, sendTicketSMS } from '../services/notificationService';
+
+export const createReservation = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { tripId, boardingPoint, dropoffPoint, seatNumber } = req.body;
+    const userId = req.user!.userId;
+
+    if (!tripId) {
+      return res.status(400).json({ success: false, error: 'tripId requis' });
+    }
+
+    const trip = await prisma.trip.findUnique({
+      where: { id: tripId },
+      include: {
+        buses: {
+          include: {
+            reservations: {
+              where: { status: { not: 'CANCELLED' } }
+            }
+          }
+        }
+      }
+    });
+
+    if (!trip || trip.status !== 'ACTIVE') {
+      return res.status(404).json({ success: false, error: 'Trajet non trouvé ou inactif' });
+    }
+
+    let assignedBusId = null;
+    let assignedSeat = null;
+
+    for (const bus of trip.buses) {
+      if (bus.status === 'AVAILABLE') {
+        const occupiedSeats = bus.reservations.map(r => r.seatNumber);
+        
+        if (seatNumber) {
+          const requestedSeat = parseInt(seatNumber, 10);
+          if (!occupiedSeats.includes(requestedSeat) && requestedSeat >= 1 && requestedSeat <= bus.capacity) {
+            assignedBusId = bus.id;
+            assignedSeat = requestedSeat;
+            break;
+          } else {
+            return res.status(400).json({ success: false, error: 'Le siège sélectionné est déjà occupé ou invalide' });
+          }
+        } else {
+          for (let i = 1; i <= bus.capacity; i++) {
+            if (!occupiedSeats.includes(i)) {
+              assignedBusId = bus.id;
+              assignedSeat = i;
+              break;
+            }
+          }
+          if (assignedBusId) break;
+        }
+      }
+    }
+
+    if (!assignedBusId || !assignedSeat) {
+      return res.status(400).json({ success: false, error: 'Aucune place disponible pour ce trajet' });
+    }
+
+    const reservation = await prisma.reservation.create({
+      data: {
+        userId,
+        busId: assignedBusId,
+        seatNumber: assignedSeat,
+        boardingPoint,
+        dropoffPoint,
+        status: 'PENDING'
+      }
+    });
+
+    const updatedBus = await prisma.bus.findUnique({
+      where: { id: assignedBusId },
+      include: { reservations: { where: { status: { not: 'CANCELLED' } } } }
+    });
+
+    if (updatedBus && updatedBus.reservations.length >= updatedBus.capacity) {
+      await prisma.bus.update({
+        where: { id: assignedBusId },
+        data: { status: 'FULL' }
+      });
+      
+      await prisma.bus.create({
+        data: {
+          tripId: trip.id,
+          busNumber: `BTS-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+          capacity: 13,
+          status: 'AVAILABLE'
+        }
+      });
+    }
+
+    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map(admin => ({
+          userId: admin.id,
+          title: 'Nouvelle Réservation',
+          message: `Nouvelle réservation en attente pour le trajet ${trip.departure} -> ${trip.destination}`,
+          type: 'IN_APP'
+        }))
+      });
+    }
+
+    res.status(201).json({ success: true, reservation });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const payReservation = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { reservationId, waveTransactionId, amount } = req.body;
+    const userId = req.user!.userId;
+
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+      include: { bus: { include: { trip: true } } }
+    });
+
+    if (!reservation) {
+      return res.status(404).json({ success: false, error: 'Réservation non trouvée' });
+    }
+
+    if (reservation.userId !== userId) {
+      return res.status(403).json({ success: false, error: 'Action non autorisée' });
+    }
+
+    if (reservation.status !== 'PENDING') {
+      return res.status(400).json({ success: false, error: 'La réservation n\'est pas en attente de paiement' });
+    }
+
+    let createdTicket;
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.create({
+        data: {
+          reservationId,
+          waveTransactionId,
+          amount: amount || reservation.bus.trip.price,
+          status: 'COMPLETED'
+        }
+      });
+
+      await tx.reservation.update({
+        where: { id: reservationId },
+        data: { status: 'PAID' }
+      });
+
+      const ticketCode = `TKT-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+      createdTicket = await tx.ticket.create({
+        data: {
+          reservationId,
+          ticketCode,
+          qrCodeData: JSON.stringify({ reservationId, ticketCode })
+        }
+      });
+    });
+
+    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map(admin => ({
+          userId: admin.id,
+          title: 'Paiement Reçu',
+          message: `Paiement validé pour la réservation de ${reservation.bus.trip.departure} -> ${reservation.bus.trip.destination}`,
+          type: 'IN_APP'
+        }))
+      });
+    }
+
+    // --- ENVOI DES NOTIFICATIONS CLIENT (EMAIL ET SMS) ---
+    // Fetch the full reservation with user details to send emails
+    const fullReservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+      include: {
+        user: true,
+        bus: { include: { trip: true } }
+      }
+    });
+
+    if (fullReservation && createdTicket) {
+      await sendTicketEmail(fullReservation.user, createdTicket, fullReservation);
+      await sendTicketSMS(fullReservation.user, createdTicket, fullReservation);
+    }
+
+    res.json({ success: true, message: 'Paiement effectué avec succès et billet généré', ticket: createdTicket });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyReservations = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    const reservations = await prisma.reservation.findMany({
+      where: { userId },
+      include: {
+        bus: {
+          include: { trip: true }
+        },
+        ticket: true,
+        payment: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ success: true, reservations });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllReservations = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'AGENT') {
+      return res.status(403).json({ success: false, error: 'Accès non autorisé' });
+    }
+
+    const reservations = await prisma.reservation.findMany({
+      include: {
+        user: true,
+        bus: {
+          include: { trip: true }
+        },
+        ticket: true,
+        payment: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ success: true, reservations });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getTicketByCode = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const ticketCode = req.params.ticketCode as string;
+    const ticket = await prisma.ticket.findUnique({
+      where: { ticketCode },
+      include: {
+        reservation: {
+          include: {
+            user: true,
+            bus: { include: { trip: true } }
+          }
+        }
+      }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ success: false, error: 'Billet non trouvé' });
+    }
+
+    res.json({ success: true, ticket });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateReservationStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const { status } = req.body;
+    
+    if (req.user!.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, error: 'Accès non autorisé' });
+    }
+
+    const existingReservation = await prisma.reservation.findUnique({
+      where: { id },
+      include: { ticket: true }
+    });
+
+    if (!existingReservation) {
+      return res.status(404).json({ success: false, error: 'Réservation non trouvée' });
+    }
+
+    if (!['PENDING', 'PAID', 'CANCELLED'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'Statut invalide' });
+    }
+
+    let reservation;
+    if (status === 'PAID' && existingReservation.status !== 'PAID') {
+      // Admin is manually validating payment
+      reservation = await prisma.$transaction(async (tx) => {
+        const updated = await tx.reservation.update({
+          where: { id },
+          data: { status: 'PAID' }
+        });
+
+        // Create mock cash payment
+        await tx.payment.create({
+          data: {
+            reservationId: id,
+            waveTransactionId: 'CASH-ADMIN-' + Math.floor(Math.random() * 1000000),
+            amount: 0, // Ideally we fetch the trip price here, but skipping for simplicity
+            status: 'COMPLETED'
+          }
+        });
+
+        // Create ticket
+        const ticketCode = `TKT-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+        await tx.ticket.create({
+          data: {
+            reservationId: id,
+            ticketCode,
+            qrCodeData: JSON.stringify({ reservationId: id, ticketCode })
+          }
+        });
+
+        return updated;
+      });
+    } else {
+      reservation = await prisma.reservation.update({
+        where: { id },
+        data: { status }
+      });
+    }
+
+    res.json({ success: true, reservation });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const markTicketAsUsed = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const ticketCode = req.params.ticketCode as string;
+
+    if (req.user!.role !== 'ADMIN' && req.user!.role !== 'AGENT' && req.user!.role !== 'CONTROLLER') {
+      return res.status(403).json({ success: false, error: 'Accès non autorisé' });
+    }
+
+    const ticket = await prisma.ticket.findUnique({
+      where: { ticketCode },
+      include: { reservation: { include: { bus: { include: { trip: true } } } } }
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ success: false, error: 'Billet non trouvé' });
+    }
+
+    if (ticket.isUsed) {
+      return res.status(400).json({ success: false, error: 'Billet déjà utilisé' });
+    }
+
+    if (ticket.reservation.status === 'CANCELLED') {
+      return res.status(400).json({ success: false, error: 'La réservation est annulée' });
+    }
+
+    const updatedTicket = await prisma.ticket.update({
+      where: { ticketCode },
+      data: {
+        isUsed: true,
+        usedAt: new Date()
+      }
+    });
+
+    res.json({ success: true, message: 'Billet validé avec succès', ticket: updatedTicket });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,0 +1,163 @@
+.datatable-container {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-gray-border);
+  overflow-x: auto;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .datatable-container {
+    overflow-x: hidden;
+    border: none;
+    border-radius: 0;
+  }
+  
+  .datatable, .datatable tbody, .datatable td {
+    display: block;
+    width: 100%;
+  }
+  
+  .datatable thead {
+    display: none;
+  }
+  
+  .datatable tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    background-color: var(--color-white);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  }
+  
+  .datatable td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0;
+    border-bottom: none;
+    text-align: left !important;
+    gap: 0.25rem;
+  }
+  
+  .datatable td:last-child {
+    grid-column: 1 / -1;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px dashed rgba(0,0,0,0.05);
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  
+  .datatable td:first-child {
+    padding-top: 0;
+  }
+  
+  .datatable td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-gray-disabled);
+    text-align: left;
+    margin-right: 0;
+  }
+  
+  .datatable-actions {
+    justify-content: flex-end !important;
+    gap: 1rem;
+  }
+}
+
+.datatable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.datatable th,
+.datatable td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-gray-border);
+}
+
+.datatable th {
+  background-color: var(--color-gray-light);
+  color: var(--color-gray-disabled);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.datatable tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.datatable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.datatable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.datatable td {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.datatable-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.datatable-empty {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--color-gray-border);
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-gray-disabled);
+}
+
+/* Badge Utility Classes for Tables */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  background-color: rgba(11, 110, 46, 0.1);
+  color: var(--color-primary);
+}
+
+.badge-warning {
+  background-color: rgba(244, 196, 48, 0.1);
+  color: #D97706;
+}
+
+.badge-danger {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+}
+
+.badge-info {
+  background-color: rgba(30, 78, 216, 0.1);
+  color: var(--color-info);
+}
