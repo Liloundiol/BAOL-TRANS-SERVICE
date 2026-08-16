@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Download, FileText } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import { Button } from '../../components/shared/Button';
 import { DataTable } from '../../components/admin/DataTable';
 import type { Column } from '../../components/admin/DataTable';
@@ -11,6 +11,7 @@ interface Reservation {
   user: { phoneNumber: string, firstName?: string, lastName?: string };
   bus: { trip: { departure: string, destination: string, date: string, time: string, price: string } };
   status: 'PENDING' | 'PAID' | 'CANCELLED';
+  paymentProofUrl?: string;
   createdAt: string;
 }
 
@@ -43,6 +44,9 @@ const ReservationsManagementPage: React.FC = () => {
         body: JSON.stringify({ status: newStatus })
       });
       setReservations(prev => prev.map(r => r.id === id ? { ...r, status: newStatus as any } : r));
+      if (newStatus === 'PAID') {
+        alert('Réservation validée, billet généré et SMS envoyé !');
+      }
     } catch (error: any) {
       alert(error.message || 'Erreur lors de la mise à jour du statut');
     }
@@ -68,12 +72,22 @@ const ReservationsManagementPage: React.FC = () => {
     { 
       header: 'Statut', 
       accessor: (row) => (
-        <span className={`badge ${
-          row.status === 'PAID' ? 'badge-success' : 
-          row.status === 'PENDING' ? 'badge-warning' : 'badge-danger'
-        }`}>
-          {row.status === 'PAID' ? 'Payé' : row.status === 'PENDING' ? 'En attente' : 'Annulé'}
-        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+          <span className={`badge ${
+            row.status === 'PAID' ? 'badge-success' : 
+            row.status === 'PENDING' ? 'badge-warning' : 'badge-danger'
+          }`}>
+            {row.status === 'PAID' ? 'Payé' : row.status === 'PENDING' ? 'En attente' : 'Annulé'}
+          </span>
+          {row.paymentProofUrl && (
+            <button 
+              onClick={() => window.open(`http://localhost:5000${row.paymentProofUrl}`, '_blank')}
+              style={{ fontSize: '0.7rem', color: '#1E4ED8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
+            >
+              Voir preuve
+            </button>
+          )}
+        </div>
       ) 
     },
     { 
@@ -213,7 +227,7 @@ const ReservationsManagementPage: React.FC = () => {
                     <h3 style={{ padding: '1rem 1.5rem', backgroundColor: 'var(--color-gray-bg)', borderTop: '1px solid var(--color-gray-border)', borderBottom: '1px solid var(--color-gray-border)', margin: 0, fontSize: '1rem', color: 'var(--color-black)' }}>
                       {tripKey} ({groupReservations.length} réservation{groupReservations.length > 1 ? 's' : ''})
                     </h3>
-                    <DataTable columns={columns} data={groupReservations} />
+                    <DataTable columns={columns} data={groupReservations} keyField="id" />
                   </div>
                 ))}
                 {Object.keys(groupedData).length === 0 && (

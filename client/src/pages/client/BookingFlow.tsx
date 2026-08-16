@@ -68,7 +68,15 @@ const DetailsSelection: React.FC<{ onNext: (boarding: string, dropoff: string) =
 
 
 // Step 2: Booking Summary & Payment
-const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string, tripId: string, onPay: () => void }> = ({ seat, boarding, dropoff, tripId, onPay }) => {
+const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string, trip: any, onPay: (file: File) => void }> = ({ seat, boarding, dropoff, trip, onPay }) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   return (
     <div className="booking-step">
       <h2>Résumé de votre réservation</h2>
@@ -76,7 +84,7 @@ const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string
       <div className="summary-card">
         <div className="summary-row">
           <span>Trajet</span>
-          <strong>UGB → Dakar</strong>
+          <strong>{trip.departure} → {trip.destination}</strong>
         </div>
         <div className="summary-row">
           <span>Point de montée</span>
@@ -88,7 +96,7 @@ const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string
         </div>
         <div className="summary-row">
           <span>Date et Heure</span>
-          <strong>15 Oct 2026 - 14:00</strong>
+          <strong>{new Date(trip.date).toLocaleDateString('fr-FR')} - {trip.departureTime}</strong>
         </div>
         <div className="summary-row">
           <span>Place numéro</span>
@@ -97,15 +105,47 @@ const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string
         <hr className="summary-divider" />
         <div className="summary-row total">
           <span>Total à payer</span>
-          <strong className="price-accent">5000 FCFA</strong>
+          <strong className="price-accent">{trip.price} FCFA</strong>
         </div>
       </div>
 
-      <div className="payment-section">
-        <h3>Paiement sécurisé</h3>
-        <p>Vous serez redirigé vers l'application Wave pour valider le paiement.</p>
-        <Button variant="primary" fullWidth onClick={onPay}>
-          Payer avec Wave
+      <div className="payment-section" style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+        <h3 style={{ color: '#0B6E2E', marginBottom: '1rem' }}>Paiement Wave</h3>
+        <ol style={{ paddingLeft: '1.5rem', marginBottom: '1.5rem', color: '#374151' }}>
+          <li style={{ marginBottom: '0.5rem' }}>Cliquez sur le lien ci-dessous ou ouvrez votre application Wave</li>
+          <li style={{ marginBottom: '0.5rem' }}>Payez <strong>{trip.price} FCFA</strong> au numéro : <strong style={{color: '#111827', fontSize: '1.1em'}}>{import.meta.env.VITE_WAVE_MERCHANT_PHONE || '77 000 00 00'}</strong></li>
+          <li style={{ marginBottom: '0.5rem' }}>Prenez une capture d'écran du reçu de transfert</li>
+          <li>Téléchargez la capture ci-dessous pour validation :</li>
+        </ol>
+
+        {import.meta.env.VITE_WAVE_MERCHANT_LINK && (
+          <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+            <Button 
+              variant="outline" 
+              fullWidth 
+              onClick={() => window.open(import.meta.env.VITE_WAVE_MERCHANT_LINK, '_blank')}
+            >
+              🔗 Payer via le lien Wave
+            </Button>
+          </div>
+        )}
+        
+        <div style={{ marginBottom: '1.5rem' }}>
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleFileChange}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px', backgroundColor: 'white' }}
+          />
+        </div>
+
+        <Button 
+          variant="primary" 
+          fullWidth 
+          onClick={() => selectedFile && onPay(selectedFile)}
+          disabled={!selectedFile}
+        >
+          {selectedFile ? 'Confirmer ma réservation' : 'Veuillez joindre la capture'}
         </Button>
       </div>
     </div>
@@ -165,23 +205,36 @@ const BookingFlow: React.FC = () => {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (file: File) => {
     setIsLoading(true);
     setError('');
     try {
-      // 2. Pay reservation
-      const data = await apiFetch('/reservations/pay', {
+      // 1. Upload proof
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const token = localStorage.getItem('bts_token');
+      const uploadRes = await fetch('http://localhost:5000/api/upload', {
         method: 'POST',
-        body: JSON.stringify({ 
-          reservationId: reservationData.id, 
-          waveTransactionId: `WAVE-${Date.now()}` 
-        })
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) throw new Error(uploadData.error || 'Erreur lors de l\'upload');
+
+      // 2. Update reservation with proof URL
+      await apiFetch(`/reservations/${reservationData.id}/proof`, {
+        method: 'PATCH',
+        body: JSON.stringify({ paymentProofUrl: uploadData.url })
       });
 
-      // 3. Success -> Redirect to ticket
-      navigate(`/ticket/${data.ticket.ticketCode}`);
+      // 3. Move to success/ticket step
+      setStep(3);
     } catch (err: any) {
-      setError(err.message || 'Erreur de paiement');
+      setError(err.message || 'Erreur lors de la soumission de la preuve de paiement');
     } finally {
       setIsLoading(false);
     }
@@ -206,9 +259,19 @@ const BookingFlow: React.FC = () => {
           seat={reservationData.seatNumber} 
           boarding={bookingPoints.boarding} 
           dropoff={bookingPoints.dropoff} 
-          tripId={id || ''} 
+          trip={trip} 
           onPay={handlePayment} 
         />
+      )}
+      {!isLoading && step === 3 && (
+        <div className="booking-step" style={{ textAlign: 'center', padding: '2rem' }}>
+          <h2 style={{ color: '#0B6E2E', marginBottom: '1rem' }}>Réservation en attente !</h2>
+          <p style={{ marginBottom: '2rem' }}>Nous avons bien reçu votre preuve de paiement. Votre réservation est en cours de validation par notre équipe.</p>
+          <p>Vous recevrez votre billet par SMS très prochainement.</p>
+          <Button variant="primary" onClick={() => navigate('/dashboard')} style={{ marginTop: '2rem' }}>
+            Voir mes réservations
+          </Button>
+        </div>
       )}
     </div>
   );

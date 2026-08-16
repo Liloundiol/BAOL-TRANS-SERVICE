@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import twilio from 'twilio';
 
 // Configuration du transporteur d'email
 const transporter = nodemailer.createTransport({
@@ -77,17 +78,49 @@ export const sendTicketEmail = async (user: any, ticket: any, reservation: any) 
   }
 };
 
+// Configuration Twilio
+const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
+
 export const sendTicketSMS = async (user: any, ticket: any, reservation: any) => {
   const { bus } = reservation;
   const { trip } = bus;
   
-  const smsMessage = `BTS: Votre billet ${ticket.ticketCode} est confirmé. Trajet: ${trip.departure}-${trip.destination} le ${new Date(trip.date).toLocaleDateString('fr-FR')} à ${trip.departureTime}. Bus: ${bus.busNumber}. Lieu: ${reservation.boardingPoint}. Bon voyage !`;
+  const smsMessage = `BTS: Billet ${ticket.ticketCode} confirmé. Trajet: ${trip.departure}-${trip.destination} le ${new Date(trip.date).toLocaleDateString('fr-FR')} à ${trip.departureTime || new Date(trip.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}. Bus: ${bus.busNumber}. Lieu: ${reservation.boardingPoint || 'Gare routière'}.`;
 
-  // TODO: Remplacer cette simulation par l'appel à la véritable API SMS (ex: Orange, Infobip)
-  console.log(`\n========================================`);
-  console.log(`[SIMULATION SMS] - À destination de: ${user.phoneNumber}`);
-  console.log(`Message: ${smsMessage}`);
-  console.log(`========================================\n`);
-  
-  return true;
+  if (!user.phoneNumber) {
+    console.log(`[SMS] Numéro de téléphone manquant pour ${user.firstName}`);
+    return false;
+  }
+
+  // Si Twilio n'est pas configuré, on simule l'envoi
+  if (!twilioClient || !process.env.TWILIO_PHONE_NUMBER) {
+    console.log(`\n========================================`);
+    console.log(`[SIMULATION SMS] - À destination de: ${user.phoneNumber}`);
+    console.log(`Message: ${smsMessage}`);
+    console.log(`========================================\n`);
+    return true;
+  }
+
+  try {
+    // Format the phone number (assuming it's senegalese)
+    let formattedPhone = user.phoneNumber;
+    if (!formattedPhone.startsWith('+')) {
+      // Default to Senegal code if no + is provided
+      formattedPhone = formattedPhone.startsWith('221') ? `+${formattedPhone}` : `+221${formattedPhone}`;
+    }
+
+    const message = await twilioClient.messages.create({
+      body: smsMessage,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: formattedPhone
+    });
+
+    console.log(`[SMS] Billet envoyé par SMS à ${formattedPhone} (SID: ${message.sid})`);
+    return true;
+  } catch (error: any) {
+    console.error(`[SMS ERROR] Échec de l'envoi du SMS à ${user.phoneNumber}:`, error.message);
+    return false;
+  }
 };

@@ -56,18 +56,19 @@ model BoardingPoint {
 }
 
 model Reservation {
-  id            String            @id @default(uuid())
-  userId        String
-  busId         String
-  seatNumber    Int
-  status        ReservationStatus @default(PENDING)
-  createdAt     DateTime          @default(now())
-  boardingPoint String?
-  dropoffPoint  String?
-  payment       Payment?
-  bus           Bus               @relation(fields: [busId], references: [id])
-  user          User              @relation(fields: [userId], references: [id])
-  ticket        Ticket?
+  id              String            @id @default(uuid())
+  userId          String
+  busId           String
+  seatNumber      Int
+  status          ReservationStatus @default(PENDING)
+  createdAt       DateTime          @default(now())
+  boardingPoint   String?
+  dropoffPoint    String?
+  paymentProofUrl String?
+  payment         Payment?
+  bus             Bus               @relation(fields: [busId], references: [id])
+  user            User              @relation(fields: [userId], references: [id])
+  ticket          Ticket?
 
   @@unique([busId, seatNumber])
 }

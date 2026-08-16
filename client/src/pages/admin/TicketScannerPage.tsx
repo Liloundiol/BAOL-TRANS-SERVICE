@@ -37,7 +37,7 @@ const TicketScannerPage: React.FC = () => {
             } else {
                navigate(`/admin/verify/${decodedText.trim().toUpperCase()}`);
             }
-          } catch (e) {
+          } catch {
             // Si c'est juste du texte
             navigate(`/admin/verify/${decodedText.trim().toUpperCase()}`);
           }

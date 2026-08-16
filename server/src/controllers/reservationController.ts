@@ -3,10 +3,11 @@ import { AuthRequest } from '../middleware/authMiddleware';
 import prisma from '../config/prisma';
 import crypto from 'crypto';
 import { sendTicketEmail, sendTicketSMS } from '../services/notificationService';
+import { paymentService } from '../services/paymentService';
 
 export const createReservation = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { tripId, boardingPoint, dropoffPoint, seatNumber } = req.body;
+    const { tripId, boardingPoint, dropoffPoint, seatNumber, paymentProofUrl } = req.body;
     const userId = req.user!.userId;
 
     if (!tripId) {
@@ -70,6 +71,7 @@ export const createReservation = async (req: AuthRequest, res: Response, next: N
         seatNumber: assignedSeat,
         boardingPoint,
         dropoffPoint,
+        paymentProofUrl,
         status: 'PENDING'
       }
     });
@@ -113,6 +115,42 @@ export const createReservation = async (req: AuthRequest, res: Response, next: N
   }
 };
 
+export const initiatePayment = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { reservationId } = req.body;
+    const userId = req.user!.userId;
+
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: reservationId },
+      include: { bus: { include: { trip: true } }, user: true }
+    });
+
+    if (!reservation) {
+      return res.status(404).json({ success: false, error: 'Réservation non trouvée' });
+    }
+
+    if (reservation.userId !== userId) {
+      return res.status(403).json({ success: false, error: 'Action non autorisée' });
+    }
+
+    if (reservation.status !== 'PENDING') {
+      return res.status(400).json({ success: false, error: 'La réservation n\'est pas en attente de paiement' });
+    }
+
+    // Initialize payment session with Wave
+    const amount = Number(reservation.bus.trip.price);
+    const paymentSession = await paymentService.createPaymentSession(amount, reservationId, reservation.user.phoneNumber);
+
+    if (!paymentSession.success) {
+      return res.status(500).json({ success: false, error: 'Impossible d\'initialiser le paiement avec Wave' });
+    }
+
+    res.json({ success: true, paymentUrl: paymentSession.paymentUrl, sessionId: paymentSession.sessionId });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const payReservation = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { reservationId, waveTransactionId, amount } = req.body;
@@ -132,7 +170,14 @@ export const payReservation = async (req: AuthRequest, res: Response, next: Next
     }
 
     if (reservation.status !== 'PENDING') {
-      return res.status(400).json({ success: false, error: 'La réservation n\'est pas en attente de paiement' });
+      return res.status(400).json({ success: false, error: "La réservation n'est pas en attente de paiement" });
+    }
+
+    // waveTransactionId here represents the checkout Session ID in real scenarios
+    const verification = await paymentService.verifyPayment(waveTransactionId);
+    
+    if (!verification.success || verification.status !== 'completed') {
+      return res.status(400).json({ success: false, error: "Le paiement n'a pas encore été validé par Wave" });
     }
 
     let createdTicket;
@@ -305,7 +350,7 @@ export const updateReservationStatus = async (req: AuthRequest, res: Response, n
 
         // Create ticket
         const ticketCode = `TKT-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-        await tx.ticket.create({
+        const createdTicket = await tx.ticket.create({
           data: {
             reservationId: id,
             ticketCode,
@@ -313,8 +358,26 @@ export const updateReservationStatus = async (req: AuthRequest, res: Response, n
           }
         });
 
-        return updated;
+        return { updated, createdTicket };
       });
+      
+      const createdTicket = reservation.createdTicket;
+      reservation = reservation.updated;
+
+      // Send SMS and Email after transaction
+      const fullReservation = await prisma.reservation.findUnique({
+        where: { id },
+        include: {
+          user: true,
+          bus: { include: { trip: true } }
+        }
+      });
+  
+      if (fullReservation && createdTicket) {
+        await sendTicketEmail(fullReservation.user, createdTicket, fullReservation);
+        await sendTicketSMS(fullReservation.user, createdTicket, fullReservation);
+      }
+
     } else {
       reservation = await prisma.reservation.update({
         where: { id },
@@ -362,6 +425,32 @@ export const markTicketAsUsed = async (req: AuthRequest, res: Response, next: Ne
     });
 
     res.json({ success: true, message: 'Billet validé avec succès', ticket: updatedTicket });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadProof = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { paymentProofUrl } = req.body;
+    const id = req.params.id as string;
+
+    const reservation = await prisma.reservation.findUnique({ where: { id } });
+
+    if (!reservation) {
+      return res.status(404).json({ success: false, error: 'Réservation non trouvée' });
+    }
+
+    if (reservation.userId !== req.user!.userId) {
+      return res.status(403).json({ success: false, error: 'Accès non autorisé' });
+    }
+
+    const updated = await prisma.reservation.update({
+      where: { id },
+      data: { paymentProofUrl }
+    });
+
+    res.json({ success: true, reservation: updated });
   } catch (error) {
     next(error);
   }

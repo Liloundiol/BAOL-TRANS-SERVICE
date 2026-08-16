@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, Search, Ticket, User, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { Footer } from '../components/shared/Footer';
 import './ClientLayout.css';
 
 const ClientLayout: React.FC = () => {
@@ -47,15 +48,7 @@ const ClientLayout: React.FC = () => {
       </main>
 
       {/* Footer */}
-      {location.pathname !== '/' && (
-        <footer className="container footer-content" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0', marginTop: 'auto' }}>
-          <p>© 2026 Baol Trans Services. Tous droits réservés.</p>
-          <div className="footer-links" style={{ display: 'flex', gap: '15px' }}>
-            <Link to="/terms">CGV</Link>
-            <Link to="/privacy">Confidentialité</Link>
-          </div>
-        </footer>
-      )}
+      <Footer />
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-bottom-nav mobile-only">

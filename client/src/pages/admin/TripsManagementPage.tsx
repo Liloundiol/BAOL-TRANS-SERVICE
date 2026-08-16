@@ -20,7 +20,6 @@ interface Trip {
 
 const TripsManagementPage: React.FC = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
@@ -38,14 +37,11 @@ const TripsManagementPage: React.FC = () => {
   const [formError, setFormError] = useState('');
 
   const fetchTrips = async () => {
-    setIsLoading(true);
     try {
       const data = await apiFetch('/trips');
       setTrips(data.trips || []);
     } catch (error) {
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -258,20 +254,24 @@ const TripsManagementPage: React.FC = () => {
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Départ</label>
-              <Input 
-                value={departure} 
-                onChange={e => setDeparture(e.target.value)} 
-                placeholder="Ex: UGB (Saint-Louis)" 
-                required 
+              <Input
+                id="trip-departure"
+                label=""
+                value={departure}
+                onChange={(e) => setDeparture(e.target.value)}
+                placeholder="Ex: UGB (Saint-Louis)"
+                required
               />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Destination</label>
-              <Input 
-                value={destination} 
-                onChange={e => setDestination(e.target.value)} 
-                placeholder="Ex: Dakar" 
-                required 
+              <Input
+                id="trip-destination"
+                label=""
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                placeholder="Ex: Dakar"
+                required
               />
             </div>
           </div>
@@ -280,27 +280,33 @@ const TripsManagementPage: React.FC = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Date</label>
               <Input 
+                id="trip-date"
+                label=""
                 type="date"
                 value={date} 
-                onChange={e => setDate(e.target.value)} 
+                onChange={(e) => setDate(e.target.value)} 
                 required 
               />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Heure de départ</label>
               <Input 
+                id="trip-time"
+                label=""
                 type="time"
                 value={time} 
-                onChange={e => setTime(e.target.value)} 
+                onChange={(e) => setTime(e.target.value)} 
                 required 
               />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Prix (FCFA)</label>
               <Input 
+                id="trip-price"
+                label=""
                 type="number"
                 value={price} 
-                onChange={e => setPrice(e.target.value)} 
+                onChange={(e) => setPrice(e.target.value)} 
                 placeholder="Ex: 5000" 
                 required 
               />
@@ -308,9 +314,11 @@ const TripsManagementPage: React.FC = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Capacité (Places)</label>
               <Input 
+                id="trip-capacity"
+                label=""
                 type="number"
                 value={capacity} 
-                onChange={e => setCapacity(e.target.value)} 
+                onChange={(e) => setCapacity(e.target.value)} 
                 placeholder="Ex: 13, 30, 50..." 
                 required 
               />
@@ -323,13 +331,17 @@ const TripsManagementPage: React.FC = () => {
               <div key={index} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', alignItems: 'center' }}>
                 <div style={{ flex: 2 }}>
                   <Input 
+                    id={`bp-name-${index}`}
+                    label=""
                     value={bp.name}
                     onChange={(e) => updateBoardingPoint(index, 'name', e.target.value)}
-                    placeholder="Lieu (ex: Village M)"
+                    placeholder="Nom du point (ex: Arrêt 1)"
                   />
                 </div>
                 <div style={{ flex: 1 }}>
                   <Input 
+                    id={`bp-time-${index}`}
+                    label=""
                     type="time"
                     value={bp.time}
                     onChange={(e) => updateBoardingPoint(index, 'time', e.target.value)}

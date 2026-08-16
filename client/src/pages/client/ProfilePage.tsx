@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { User, LogOut, Phone, Mail, Headset, MapPin } from 'lucide-react';
 import { Button } from '../../components/shared/Button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { apiFetch } from '../../services/api';
 import { calculateLoyalty } from '../../utils/loyalty';
 
@@ -29,7 +29,7 @@ const ProfilePage: React.FC = () => {
     navigate('/');
   };
 
-  if (!user) return null;
+  if (!user) return <Navigate to="/auth" state={{ returnTo: '/profile' }} replace />;
 
   return (
     <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '0 1rem' }}>

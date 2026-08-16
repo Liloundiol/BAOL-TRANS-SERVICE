@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, CreditCard, Users, Download, Bell, Check } from 'lucide-react';
+import { Eye, CreditCard, Users, Download, Bell } from 'lucide-react';
 import { StatsCard } from '../../components/admin/StatsCard';
 import { DataTable } from '../../components/admin/DataTable';
 import type { Column } from '../../components/admin/DataTable';
@@ -9,14 +9,6 @@ import { Modal } from '../../components/shared/Modal';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import './DashboardPage.css';
-
-interface Reservation {
-  id: string;
-  client: string;
-  trip: string;
-  amount: string;
-  status: 'Payé' | 'En attente' | 'Annulé';
-}
 
 const DashboardPage: React.FC = () => {
   const [reservations, setReservations] = useState<any[]>([]);
@@ -233,7 +225,8 @@ const DashboardPage: React.FC = () => {
               
               <div className="filter-input-wrapper">
                 <Input 
-                  id="dateFilter"
+                  id="filter-date"
+                  label=""
                   type="date"
                   value={filterDate}
                   onChange={(e) => setFilterDate(e.target.value)}

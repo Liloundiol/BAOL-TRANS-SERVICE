@@ -7,9 +7,9 @@ export const getAuthToken = () => {
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const token = getAuthToken();
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string> || {}),
   };
 
   if (token) {
@@ -25,8 +25,12 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 
   const data = await response.json();
 
+  if (response.status === 401 || response.status === 403) {
+    window.dispatchEvent(new CustomEvent('auth-error'));
+  }
+
   if (!response.ok) {
-    throw new Error(data.error || 'Une erreur est survenue');
+    throw new Error(data.error || data.message || 'Une erreur est survenue');
   }
 
   return data;

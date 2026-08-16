@@ -39,6 +39,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout();
       }
     }
+
+    const handleAuthError = () => {
+      logout();
+    };
+
+    window.addEventListener('auth-error', handleAuthError);
+    return () => window.removeEventListener('auth-error', handleAuthError);
   }, []);
 
   const login = (userData: User, jwtToken: string) => {

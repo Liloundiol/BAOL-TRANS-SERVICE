@@ -269,23 +269,24 @@ const BusManagementPage: React.FC = () => {
              <div className="auth-alert error" style={{ padding: '0.75rem', fontSize: '0.9rem' }}>{errorMsg}</div>
           )}
 
-          <Input 
-            label="Numéro du Bus *" 
-            placeholder="Ex: BUS-1234" 
+          <Input
+            id="bus-number"
+            label="Numéro du bus"
+            placeholder="Ex: BTS-001"
             value={busNumber}
             onChange={(e) => setBusNumber(e.target.value)}
             required
           />
-          
-          <Select 
-            label="Trajet Assigné *"
+          <Select
+            id="trip-id"
+            label="Trajet associé"
             value={tripId}
             onChange={(e) => setTripId(e.target.value)}
             options={[{ value: '', label: 'Sélectionner un trajet' }, ...tripOptions]}
           />
-          
-          <Input 
-            label="Capacité totale" 
+          <Input
+            id="bus-capacity"
+            label="Capacité"
             type="number"
             min="1"
             max="100"
@@ -293,9 +294,9 @@ const BusManagementPage: React.FC = () => {
             onChange={(e) => setCapacity(e.target.value)}
             required
           />
-
           {modalMode === 'edit' && (
              <Select 
+               id="bus-status"
                label="Statut du Bus"
                value={status}
                onChange={(e) => setStatus(e.target.value)}

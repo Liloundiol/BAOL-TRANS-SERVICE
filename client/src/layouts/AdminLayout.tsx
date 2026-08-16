@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Route, Bus, Users, LogOut, DollarSign, Menu, Bell, User, QrCode } from 'lucide-react';
+import { LayoutDashboard, Route, Bus, Users, LogOut, DollarSign, Menu, Bell, User, QrCode, Package } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AdminLayout.css';
 
@@ -33,6 +33,7 @@ const AdminLayout: React.FC = () => {
     { path: '/admin/reservations', icon: <Users size={20} />, label: 'Réservations' },
     { path: '/admin/verify/scan', icon: <QrCode size={20} />, label: 'Valider Billet' },
     { path: '/admin/users', icon: <User size={20} />, label: 'Utilisateurs' },
+    { path: '/admin/packages', icon: <Package size={20} />, label: 'Colis' },
     { path: '/admin/finance', icon: <DollarSign size={20} />, label: 'Finance' },
   ];
 
