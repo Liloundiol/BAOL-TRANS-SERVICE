@@ -42,7 +42,7 @@ const AdminLayout: React.FC = () => {
       {/* Sidebar Navigation */}
       <aside className="admin-sidebar">
         <div className="sidebar-header">
-          <h2 className="brand-text">BTS</h2>
+          <img src="/logo.png" alt="BTS" className="brand-text" style={{ height: '32px' }} />
           <span className="brand-badge">ADMIN</span>
         </div>
         <nav className="sidebar-nav">

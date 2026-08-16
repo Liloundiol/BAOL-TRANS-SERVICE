@@ -82,9 +82,9 @@ const ProfilePage: React.FC = () => {
               <Headset size={20} color="var(--color-primary)" />
               <div>
                 <p style={{ color: 'var(--color-gray-disabled)', fontSize: '0.9rem' }}>Service Client</p>
-                <a href="tel:+221772698246" style={{ fontWeight: '500', color: 'var(--color-text)', textDecoration: 'none' }}>+221 77 269 82 46</a>
+                <a href="tel:+221773402425" style={{ fontWeight: '500', color: 'var(--color-text)', textDecoration: 'none' }}>+221 77 340 24 25</a>
               </div>
-              <a href="https://wa.me/221772698246" target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0.5rem 1rem', backgroundColor: '#25D366', color: 'white', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
+              <a href="https://wa.me/221773402425" target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0.5rem 1rem', backgroundColor: '#25D366', color: 'white', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
                 WhatsApp
               </a>
             </div>
@@ -93,7 +93,7 @@ const ProfilePage: React.FC = () => {
               <MapPin size={20} color="var(--color-primary)" />
               <div>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-gray-disabled)' }}>Agence Principale</p>
-                <a href="https://maps.google.com/?q=Gare+Routière+UGB+Saint-Louis" target="_blank" rel="noreferrer" style={{ margin: 0, fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none' }}>Gare Routière UGB, Saint-Louis</a>
+                <a href="https://maps.google.com/?q=Université+Gaston+Berger" target="_blank" rel="noreferrer" style={{ margin: 0, fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none' }}>Université Gaston Berger</a>
               </div>
             </div>
             
@@ -101,7 +101,7 @@ const ProfilePage: React.FC = () => {
               <Mail size={20} color="var(--color-primary)" />
               <div>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-gray-disabled)' }}>Assistance par email</p>
-                <a href="mailto:support@baoltrans.sn" style={{ margin: 0, fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none' }}>support@baoltrans.sn</a>
+                <a href="mailto:contactbaoltranservices@gmail.com" style={{ margin: 0, fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none' }}>contactbaoltranservices@gmail.com</a>
               </div>
             </div>
           </div>

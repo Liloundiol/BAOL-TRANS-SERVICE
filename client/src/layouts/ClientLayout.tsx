@@ -26,7 +26,7 @@ const ClientLayout: React.FC = () => {
       <header className="client-header desktop-only">
         <div className="container header-content">
           <Link to="/" className="brand-logo">
-            <strong>BTS</strong>
+            <img src="/logo.png" alt="BTS" style={{ height: '40px' }} />
           </Link>
           <nav className="desktop-nav">
             {navItems.map((item) => (

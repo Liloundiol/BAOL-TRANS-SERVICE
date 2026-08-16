@@ -65,7 +65,7 @@ const TicketPage: React.FC = () => {
 
       <div className="ticket-card">
         <div className="ticket-top">
-          <div className="brand">BTS</div>
+          <img src="/logo.png" alt="BTS" className="brand" style={{ height: '30px' }} />
           <div className="ticket-status badge-success badge">VALIDE</div>
         </div>
         

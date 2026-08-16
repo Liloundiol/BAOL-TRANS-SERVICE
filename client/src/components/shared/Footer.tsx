@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
         
         {/* Brand Section */}
         <div className="footer-section brand-section">
-          <h2 className="footer-brand">BTS</h2>
+          <img src="/logo.png" alt="BTS" className="footer-brand" style={{ height: '50px', marginBottom: '1rem' }} />
           <p className="footer-slogan">Voyagez en toute sérénité avec Baol Trans Services.</p>
           <div className="social-links">
             <a href="#" className="social-icon" aria-label="WhatsApp"><MessageCircle size={20} /></a>
@@ -33,15 +33,15 @@ export const Footer: React.FC = () => {
           <ul className="contact-list">
             <li>
               <Phone size={16} />
-              <span>+221 77 123 45 67</span>
+              <span>+221 77 340 24 25</span>
             </li>
             <li>
               <Mail size={16} />
-              <span>contact@baoltrans.com</span>
+              <span>contactbaoltranservices@gmail.com</span>
             </li>
             <li>
               <MapPin size={16} />
-              <span>Dakar, Sénégal</span>
+              <span>Université Gaston Berger, Saint-Louis</span>
             </li>
           </ul>
         </div>
