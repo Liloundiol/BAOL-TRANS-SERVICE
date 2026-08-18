@@ -44,6 +44,8 @@ function App() {
             <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="privacy" element={<PrivacyPage />} />
             <Route path="terms" element={<TermsPage />} />
+            {/* Fallback for cached old links */}
+            <Route path="tickets" element={<Navigate to="/dashboard" replace />} />
           </Route>
 
           {/* Admin Routes */}
