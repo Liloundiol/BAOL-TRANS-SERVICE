@@ -79,17 +79,7 @@ const ReservationsManagementPage: React.FC = () => {
           }`}>
             {row.status === 'PAID' ? 'Payé' : row.status === 'PENDING' ? 'En attente' : 'Annulé'}
           </span>
-          {row.paymentProofUrl && (
-            <button 
-              onClick={() => {
-                const baseUrl = API_BASE_URL.replace('/api', '');
-                window.open(`${baseUrl}${row.paymentProofUrl}`, '_blank');
-              }}
-              style={{ fontSize: '0.7rem', color: '#1E4ED8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
-            >
-              Voir preuve
-            </button>
-          )}
+          <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>-</span>
         </div>
       ) 
     },

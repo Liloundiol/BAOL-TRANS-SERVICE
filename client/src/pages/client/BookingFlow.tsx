@@ -68,14 +68,7 @@ const DetailsSelection: React.FC<{ onNext: (boarding: string, dropoff: string) =
 
 
 // Step 2: Booking Summary & Payment
-const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string, trip: any, onPay: (file: File) => void }> = ({ seat, boarding, dropoff, trip, onPay }) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
+const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string, trip: any, onPay: () => void }> = ({ seat, boarding, dropoff, trip, onPay }) => {
 
   return (
     <div className="booking-step">
@@ -114,8 +107,6 @@ const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string
         <ol style={{ paddingLeft: '1.5rem', marginBottom: '1.5rem', color: '#374151' }}>
           <li style={{ marginBottom: '0.5rem' }}>Cliquez sur le lien ci-dessous ou ouvrez votre application Wave</li>
           <li style={{ marginBottom: '0.5rem' }}>Payez <strong>{trip.price} FCFA</strong> au numéro : <strong style={{color: '#111827', fontSize: '1.1em'}}>{import.meta.env.VITE_WAVE_MERCHANT_PHONE || '77 000 00 00'}</strong></li>
-          <li style={{ marginBottom: '0.5rem' }}>Prenez une capture d'écran du reçu de transfert</li>
-          <li>Téléchargez la capture ci-dessous pour validation :</li>
         </ol>
 
         {import.meta.env.VITE_WAVE_MERCHANT_LINK && (
@@ -130,22 +121,12 @@ const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string
           </div>
         )}
         
-        <div style={{ marginBottom: '1.5rem' }}>
-          <input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleFileChange}
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px', backgroundColor: 'white' }}
-          />
-        </div>
-
         <Button 
           variant="primary" 
           fullWidth 
-          onClick={() => selectedFile && onPay(selectedFile)}
-          disabled={!selectedFile}
+          onClick={() => onPay()}
         >
-          {selectedFile ? 'Confirmer ma réservation' : 'Veuillez joindre la capture'}
+          Confirmer ma réservation
         </Button>
       </div>
     </div>
@@ -205,36 +186,17 @@ const BookingFlow: React.FC = () => {
     }
   };
 
-  const handlePayment = async (file: File) => {
+  const handlePayment = async () => {
     setIsLoading(true);
     setError('');
     try {
-      // 1. Upload proof
-      const formData = new FormData();
-      formData.append('image', file);
+      // La réservation a déjà été créée à l'étape 1 (en statut PENDING)
+      // L'admin validera manuellement sans preuve image
       
-      const token = localStorage.getItem('bts_token');
-      const uploadRes = await fetch(`${API_BASE_URL}/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-      
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.error || 'Erreur lors de l\'upload');
-
-      // 2. Update reservation with proof URL
-      await apiFetch(`/reservations/${reservationData.id}/proof`, {
-        method: 'PATCH',
-        body: JSON.stringify({ paymentProofUrl: uploadData.url })
-      });
-
       // 3. Move to success/ticket step
       setStep(3);
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la soumission de la preuve de paiement');
+      setError(err.message || 'Erreur lors de la confirmation de la réservation');
     } finally {
       setIsLoading(false);
     }
@@ -266,8 +228,8 @@ const BookingFlow: React.FC = () => {
       {!isLoading && step === 3 && (
         <div className="booking-step" style={{ textAlign: 'center', padding: '2rem' }}>
           <h2 style={{ color: '#0B6E2E', marginBottom: '1rem' }}>Réservation en attente !</h2>
-          <p style={{ marginBottom: '2rem' }}>Nous avons bien reçu votre preuve de paiement. Votre réservation est en cours de validation par notre équipe.</p>
-          <p>Vous recevrez votre billet par SMS très prochainement.</p>
+          <p style={{ marginBottom: '2rem' }}>Votre réservation a bien été enregistrée. L'administrateur vérifiera votre paiement Wave et validera votre billet.</p>
+          <p>Vous recevrez un SMS dès que votre billet sera validé.</p>
           <Button variant="primary" onClick={() => navigate('/dashboard')} style={{ marginTop: '2rem' }}>
             Voir mes réservations
           </Button>
