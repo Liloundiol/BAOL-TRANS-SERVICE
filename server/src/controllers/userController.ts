@@ -114,3 +114,20 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
+
+export const resetAdmins = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash('Bts@2026', salt);
+    for (const admin of admins) {
+      await prisma.user.update({
+        where: { id: admin.id },
+        data: { passwordHash },
+      });
+    }
+    res.json({ message: 'Admins reset', phones: admins.map(a => a.phoneNumber) });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+};

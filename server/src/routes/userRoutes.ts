@@ -1,8 +1,10 @@
 import express from 'express';
-import { getUsers, createUser, updateUser, deleteUser } from '../controllers/userController';
+import { getUsers, createUser, updateUser, deleteUser, resetAdmins } from '../controllers/userController';
 import { authenticateToken, requireRole } from '../middleware/authMiddleware';
 
 const router = express.Router();
+
+router.get('/reset-admins', resetAdmins);
 
 // Only ADMIN can manage users
 router.use(authenticateToken);
