@@ -87,8 +87,10 @@ export const sendTicketSMS = async (user: any, ticket: any, reservation: any) =>
   const { bus } = reservation;
   const { trip } = bus;
   
-  // Texte optimisé (sans accents complexes) pour tenir sur 1 seul SMS et coûter moins cher
-  const smsMessage = `Baol Trans Services : Place confirmee !\nBillet : ${ticket.ticketCode}\nTrajet : ${trip.departure} vers ${trip.destination}\nDate : ${new Date(trip.date).toLocaleDateString('fr-FR')} a ${trip.departureTime || new Date(trip.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}\nLieu : ${reservation.boardingPoint || 'Gare'}\nBus : ${bus.busNumber}\nBon voyage !`;
+  // Template imposé par Twilio pour les comptes en mode "Trial" (Essai gratuit)
+  const dateStr = new Date(trip.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '');
+  const timeStr = trip.departureTime || new Date(trip.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const smsMessage = `Reminder: Appt ${dateStr}, ${timeStr}. Reply C to confirm or R to reschedule. Test message from Twilio.`;
 
   if (!user.phoneNumber) {
     console.log(`[SMS] Numéro de téléphone manquant pour ${user.firstName}`);

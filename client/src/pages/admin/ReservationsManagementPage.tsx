@@ -79,7 +79,6 @@ const ReservationsManagementPage: React.FC = () => {
           }`}>
             {row.status === 'PAID' ? 'Payé' : row.status === 'PENDING' ? 'En attente' : 'Annulé'}
           </span>
-          <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>-</span>
         </div>
       ) 
     },
@@ -98,8 +97,8 @@ const ReservationsManagementPage: React.FC = () => {
           )}
           {row.status !== 'CANCELLED' && (
             <button 
-              className="bts-button bts-button-danger" 
-              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', minHeight: 'auto', borderRadius: '4px', backgroundColor: 'var(--color-danger)' }}
+              className="bts-button" 
+              style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', minHeight: 'auto', borderRadius: '4px', backgroundColor: 'transparent', color: '#EF4444', border: '1px solid #EF4444' }}
               onClick={() => {
                 if(window.confirm('Voulez-vous vraiment annuler cette réservation ?')) {
                   handleStatusChange(row.id, 'CANCELLED');
