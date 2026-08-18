@@ -17,12 +17,11 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Links */}
         <div className="footer-section links-section">
           <h3 className="footer-title">Liens rapides</h3>
           <ul className="footer-links">
-            <li><Link to="/">Rechercher un trajet</Link></li>
-            <li><Link to="/tickets">Mes billets</Link></li>
+            <li><Link to="/search">Rechercher un trajet</Link></li>
+            <li><Link to="/dashboard">Mes billets</Link></li>
             <li><Link to="/profile">Mon profil</Link></li>
           </ul>
         </div>
