@@ -147,7 +147,7 @@ const TripsManagementPage: React.FC = () => {
     const date = trip.date ? new Date(trip.date).toLocaleDateString('fr-FR') : '';
     const time = trip.time ? new Date(trip.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
     const status = trip.status || '';
-    const bus = trip.buses && trip.buses.length > 0 ? trip.buses.find((b:any) => b.status === 'AVAILABLE')?.busNumber || '' : '';
+    const bus = (trip as any).buses && (trip as any).buses.length > 0 ? (trip as any).buses.find((b:any) => b.status === 'AVAILABLE')?.busNumber || '' : '';
     
     const term = (searchQuery || '').toLowerCase();
     
@@ -190,8 +190,7 @@ const TripsManagementPage: React.FC = () => {
         if (row.status === 'ACTIVE') { badgeClass = 'badge-success'; statusText = 'Actif'; }
         if (row.status === 'ARCHIVED') { badgeClass = 'badge-warning'; statusText = 'Archivé'; }
         return <span className={`badge ${badgeClass}`}>{statusText}</span>;
-      },
-      sortAccessor: (row) => row.status
+      }
     },
     {
       header: 'Actions',
