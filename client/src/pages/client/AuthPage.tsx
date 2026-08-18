@@ -91,7 +91,6 @@ const AuthPage: React.FC = () => {
             id="phoneNumber"
             label="Numéro de téléphone"
             type="tel"
-            placeholder="Ex: 77 123 45 67"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             required

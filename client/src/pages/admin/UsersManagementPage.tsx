@@ -223,7 +223,6 @@ const UsersManagementPage: React.FC = () => {
                 label="Téléphone"
                 value={formData.phoneNumber}
                 onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                placeholder="Ex: 77 123 45 67"
                 required
                 disabled={!!editingUser} // Prevent changing phone number
               />
