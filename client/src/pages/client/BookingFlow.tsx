@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/shared/Button';
 import { Select } from '../../components/shared/Select';
-import { apiFetch } from '../../services/api';
+import { apiFetch, API_BASE_URL } from '../../services/api';
 import './BookingFlow.css';
 
 // Step 1: Seat Selection
@@ -214,7 +214,7 @@ const BookingFlow: React.FC = () => {
       formData.append('image', file);
       
       const token = localStorage.getItem('bts_token');
-      const uploadRes = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
+      const uploadRes = await fetch(`${API_BASE_URL}/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -3,7 +3,7 @@ import { Search, Download } from 'lucide-react';
 import { Button } from '../../components/shared/Button';
 import { DataTable } from '../../components/admin/DataTable';
 import type { Column } from '../../components/admin/DataTable';
-import { apiFetch } from '../../services/api';
+import { apiFetch, API_BASE_URL } from '../../services/api';
 import './AdminPages.css';
 
 interface Reservation {
@@ -82,7 +82,7 @@ const ReservationsManagementPage: React.FC = () => {
           {row.paymentProofUrl && (
             <button 
               onClick={() => {
-                const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+                const baseUrl = API_BASE_URL.replace('/api', '');
                 window.open(`${baseUrl}${row.paymentProofUrl}`, '_blank');
               }}
               style={{ fontSize: '0.7rem', color: '#1E4ED8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
