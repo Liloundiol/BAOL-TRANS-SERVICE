@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
         
         {/* Brand Section */}
         <div className="footer-section brand-section">
-          <img src="/logo.png" alt="BTS" className="footer-brand" style={{ height: '50px', marginBottom: '1rem' }} />
+          <img src="/logo.svg" alt="BTS" className="footer-brand" style={{ height: '50px', marginBottom: '1rem' }} />
           <p className="footer-slogan">Voyagez en toute sérénité avec Baol Trans Services.</p>
           <div className="social-links">
             <a href="#" className="social-icon" aria-label="WhatsApp"><MessageCircle size={20} /></a>
