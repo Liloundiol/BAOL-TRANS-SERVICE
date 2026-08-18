@@ -32,8 +32,7 @@ const LandingPage: React.FC = () => {
       <section className="pro-hero">
         <header className="hero-topbar">
           <div className="hero-brand">
-            <Bus size={28} color="#FFFFFF" />
-            <img src="/logo.png" alt="BTS" className="brand-text" style={{ height: '80px', marginBottom: '1rem' }} />
+            <img src="/logo.png" alt="BTS" className="brand-text" style={{ height: '45px' }} />
           </div>
         </header>
 
