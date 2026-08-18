@@ -1,7 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: "postgresql://postgres.eigzgalvmwdsjgjvrumg:Yayefama19072002%40@aws-0-eu-west-1.pooler.supabase.com:5432/postgres"
+    }
+  }
+});
 
 async function main() {
   const admins = await prisma.user.findMany({

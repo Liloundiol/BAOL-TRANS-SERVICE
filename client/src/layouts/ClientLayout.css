@@ -6,22 +6,19 @@
 }
 
 .client-header {
-  padding: 1rem;
+  padding: 0;
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: var(--color-gray-light); /* To blend with the background */
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-gray-border);
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--color-white);
   padding: 0.75rem 2rem;
-  border-radius: 50px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--color-gray-border);
   max-width: 1200px;
   margin: 0 auto;
 }
