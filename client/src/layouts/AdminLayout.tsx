@@ -22,20 +22,28 @@ const AdminLayout: React.FC = () => {
     navigate('/auth');
   };
 
-  if (!token || user?.role !== 'ADMIN') {
+  if (!token || !['ADMIN', 'AGENT', 'CONTROLLER'].includes(user?.role || '')) {
     return <Navigate to="/auth" replace />;
   }
 
-  const sidebarLinks = [
-    { path: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
-    { path: '/admin/trips', icon: <Route size={20} />, label: 'Trajets' },
-    { path: '/admin/buses', icon: <Bus size={20} />, label: 'Bus' },
-    { path: '/admin/reservations', icon: <Users size={20} />, label: 'Réservations' },
-    { path: '/admin/verify/scan', icon: <QrCode size={20} />, label: 'Valider Billet' },
-    { path: '/admin/users', icon: <User size={20} />, label: 'Utilisateurs' },
-    { path: '/admin/packages', icon: <Package size={20} />, label: 'Colis' },
-    { path: '/admin/finance', icon: <DollarSign size={20} />, label: 'Finance' },
+  const allSidebarLinks = [
+    { path: '/admin/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard', roles: ['ADMIN'] },
+    { path: '/admin/trips', icon: <Route size={20} />, label: 'Trajets', roles: ['ADMIN', 'AGENT'] },
+    { path: '/admin/buses', icon: <Bus size={20} />, label: 'Bus', roles: ['ADMIN', 'AGENT'] },
+    { path: '/admin/reservations', icon: <Users size={20} />, label: 'Réservations', roles: ['ADMIN', 'AGENT'] },
+    { path: '/admin/verify/scan', icon: <QrCode size={20} />, label: 'Valider Billet', roles: ['ADMIN', 'AGENT', 'CONTROLLER'] },
+    { path: '/admin/users', icon: <User size={20} />, label: 'Utilisateurs', roles: ['ADMIN'] },
+    { path: '/admin/packages', icon: <Package size={20} />, label: 'Colis', roles: ['ADMIN', 'AGENT'] },
+    { path: '/admin/finance', icon: <DollarSign size={20} />, label: 'Finance', roles: ['ADMIN'] },
   ];
+
+  const sidebarLinks = allSidebarLinks.filter(link => link.roles.includes(user?.role || ''));
+
+  // If user accesses /admin, redirect to their first available link instead of hardcoded dashboard
+  if (location.pathname === '/admin' || location.pathname === '/admin/') {
+    return <Navigate to={sidebarLinks[0]?.path || '/'} replace />;
+  }
+
 
   return (
     <div className={`admin-layout ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
