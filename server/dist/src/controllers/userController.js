@@ -35,7 +35,22 @@ const createUser = async (req, res) => {
         const { phoneNumber, firstName, lastName, email, role, password } = req.body;
         const existingUser = await prisma_1.default.user.findUnique({ where: { phoneNumber } });
         if (existingUser) {
-            res.status(400).json({ message: 'Un utilisateur avec ce numéro existe déjà' });
+            // Si l'utilisateur existe déjà mais qu'il est étudiant, on le promeut au nouveau rôle (Admin, Agent, etc.)
+            if (existingUser.role === 'STUDENT' && role && role !== 'STUDENT') {
+                const updatedUser = await prisma_1.default.user.update({
+                    where: { phoneNumber },
+                    data: {
+                        role,
+                        firstName: firstName || existingUser.firstName,
+                        lastName: lastName || existingUser.lastName,
+                        email: email || existingUser.email
+                    },
+                    select: { id: true, phoneNumber: true, role: true, firstName: true, lastName: true }
+                });
+                res.status(200).json(updatedUser);
+                return;
+            }
+            res.status(400).json({ message: 'Un membre du personnel ou un utilisateur avec ce numéro existe déjà' });
             return;
         }
         const salt = await bcrypt_1.default.genSalt(10);

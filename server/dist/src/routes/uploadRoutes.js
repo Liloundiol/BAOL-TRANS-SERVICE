@@ -12,7 +12,7 @@ const router = (0, express_1.Router)();
 // Configure storage for multer
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path_1.default.join(__dirname, '../../uploads');
+        const uploadDir = path_1.default.join(process.cwd(), 'uploads');
         if (!fs_1.default.existsSync(uploadDir)) {
             fs_1.default.mkdirSync(uploadDir, { recursive: true });
         }

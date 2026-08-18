@@ -218,18 +218,36 @@ exports.payReservation = payReservation;
 const getMyReservations = async (req, res, next) => {
     try {
         const userId = req.user.userId;
-        const reservations = await prisma_1.default.reservation.findMany({
-            where: { userId },
-            include: {
-                bus: {
-                    include: { trip: true }
+        const { page = 1, limit = 20 } = req.query;
+        const pageNumber = Number(page) || 1;
+        const pageSize = Number(limit) || 20;
+        const skip = (pageNumber - 1) * pageSize;
+        const [reservations, total] = await Promise.all([
+            prisma_1.default.reservation.findMany({
+                where: { userId },
+                skip,
+                take: pageSize,
+                include: {
+                    bus: {
+                        include: { trip: true }
+                    },
+                    ticket: true,
+                    payment: true
                 },
-                ticket: true,
-                payment: true
-            },
-            orderBy: { createdAt: 'desc' }
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma_1.default.reservation.count({ where: { userId } })
+        ]);
+        res.json({
+            success: true,
+            reservations,
+            pagination: {
+                total,
+                page: pageNumber,
+                limit: pageSize,
+                totalPages: Math.ceil(total / pageSize)
+            }
         });
-        res.json({ success: true, reservations });
     }
     catch (error) {
         next(error);
@@ -241,18 +259,41 @@ const getAllReservations = async (req, res, next) => {
         if (req.user.role !== 'ADMIN' && req.user.role !== 'AGENT') {
             return res.status(403).json({ success: false, error: 'Accès non autorisé' });
         }
-        const reservations = await prisma_1.default.reservation.findMany({
-            include: {
-                user: true,
-                bus: {
-                    include: { trip: true }
+        const { page = 1, limit = 50, status } = req.query;
+        const pageNumber = Number(page) || 1;
+        const pageSize = Number(limit) || 50;
+        const skip = (pageNumber - 1) * pageSize;
+        const whereClause = {};
+        if (status) {
+            whereClause.status = status;
+        }
+        const [reservations, total] = await Promise.all([
+            prisma_1.default.reservation.findMany({
+                where: whereClause,
+                skip,
+                take: pageSize,
+                include: {
+                    user: { select: { id: true, firstName: true, lastName: true, email: true, phoneNumber: true } },
+                    bus: {
+                        include: { trip: { select: { departure: true, destination: true, date: true, time: true, price: true } } }
+                    },
+                    ticket: { select: { ticketCode: true, isUsed: true } },
+                    payment: { select: { status: true, amount: true } }
                 },
-                ticket: true,
-                payment: true
-            },
-            orderBy: { createdAt: 'desc' }
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma_1.default.reservation.count({ where: whereClause })
+        ]);
+        res.json({
+            success: true,
+            reservations,
+            pagination: {
+                total,
+                page: pageNumber,
+                limit: pageSize,
+                totalPages: Math.ceil(total / pageSize)
+            }
         });
-        res.json({ success: true, reservations });
     }
     catch (error) {
         next(error);
@@ -392,7 +433,7 @@ exports.markTicketAsUsed = markTicketAsUsed;
 const uploadProof = async (req, res, next) => {
     try {
         const { paymentProofUrl } = req.body;
-        const { id } = req.params;
+        const id = req.params.id;
         const reservation = await prisma_1.default.reservation.findUnique({ where: { id } });
         if (!reservation) {
             return res.status(404).json({ success: false, error: 'Réservation non trouvée' });

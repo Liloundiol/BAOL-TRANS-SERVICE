@@ -7,7 +7,10 @@ exports.deleteTrip = exports.updateTrip = exports.getTripById = exports.createTr
 const prisma_1 = __importDefault(require("../config/prisma"));
 const getTrips = async (req, res, next) => {
     try {
-        const { departure, destination, date } = req.query;
+        const { departure, destination, date, page = 1, limit = 50 } = req.query;
+        const pageNumber = Number(page) || 1;
+        const pageSize = Number(limit) || 50;
+        const skip = (pageNumber - 1) * pageSize;
         const whereClause = {
             status: 'ACTIVE'
         };
@@ -21,22 +24,28 @@ const getTrips = async (req, res, next) => {
             // Very basic date filtering
             whereClause.date = new Date(date);
         }
-        const trips = await prisma_1.default.trip.findMany({
-            where: whereClause,
-            include: {
-                boardingPoints: true,
-                buses: {
-                    include: {
-                        reservations: {
-                            where: { status: { not: 'CANCELLED' } }
+        const [trips, total] = await Promise.all([
+            prisma_1.default.trip.findMany({
+                where: whereClause,
+                skip,
+                take: pageSize,
+                include: {
+                    boardingPoints: true,
+                    buses: {
+                        include: {
+                            reservations: {
+                                where: { status: { not: 'CANCELLED' } },
+                                select: { id: true, seatNumber: true } // Optimisation
+                            }
                         }
                     }
+                },
+                orderBy: {
+                    time: 'asc'
                 }
-            },
-            orderBy: {
-                time: 'asc'
-            }
-        });
+            }),
+            prisma_1.default.trip.count({ where: whereClause })
+        ]);
         // Format the response to calculate available seats
         const formattedTrips = trips.map(trip => {
             // Calculate total capacity and occupied seats across all buses for this trip
@@ -58,7 +67,16 @@ const getTrips = async (req, res, next) => {
                 boardingPoints: trip.boardingPoints
             };
         });
-        res.json({ success: true, trips: formattedTrips });
+        res.json({
+            success: true,
+            trips: formattedTrips,
+            pagination: {
+                total,
+                page: pageNumber,
+                limit: pageSize,
+                totalPages: Math.ceil(total / pageSize)
+            }
+        });
     }
     catch (error) {
         next(error);

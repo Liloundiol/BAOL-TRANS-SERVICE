@@ -214,7 +214,7 @@ const BookingFlow: React.FC = () => {
       formData.append('image', file);
       
       const token = localStorage.getItem('bts_token');
-      const uploadRes = await fetch('http://localhost:5000/api/upload', {
+      const uploadRes = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

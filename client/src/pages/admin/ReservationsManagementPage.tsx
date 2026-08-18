@@ -81,7 +81,10 @@ const ReservationsManagementPage: React.FC = () => {
           </span>
           {row.paymentProofUrl && (
             <button 
-              onClick={() => window.open(`http://localhost:5000${row.paymentProofUrl}`, '_blank')}
+              onClick={() => {
+                const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+                window.open(`${baseUrl}${row.paymentProofUrl}`, '_blank');
+              }}
               style={{ fontSize: '0.7rem', color: '#1E4ED8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}
             >
               Voir preuve

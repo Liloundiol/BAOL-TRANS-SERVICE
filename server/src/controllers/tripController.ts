@@ -3,7 +3,11 @@ import prisma from '../config/prisma';
 
 export const getTrips = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { departure, destination, date } = req.query;
+    const { departure, destination, date, page = 1, limit = 50 } = req.query;
+
+    const pageNumber = Number(page) || 1;
+    const pageSize = Number(limit) || 50;
+    const skip = (pageNumber - 1) * pageSize;
 
     const whereClause: any = {
       status: 'ACTIVE'
@@ -22,22 +26,28 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
       whereClause.date = new Date(date as string);
     }
 
-    const trips = await prisma.trip.findMany({
-      where: whereClause,
-      include: {
-        boardingPoints: true,
-        buses: {
-          include: {
-            reservations: {
-              where: { status: { not: 'CANCELLED' } }
+    const [trips, total] = await Promise.all([
+      prisma.trip.findMany({
+        where: whereClause,
+        skip,
+        take: pageSize,
+        include: {
+          boardingPoints: true,
+          buses: {
+            include: {
+              reservations: {
+                where: { status: { not: 'CANCELLED' } },
+                select: { id: true, seatNumber: true } // Optimisation
+              }
             }
           }
+        },
+        orderBy: {
+          time: 'asc'
         }
-      },
-      orderBy: {
-        time: 'asc'
-      }
-    });
+      }),
+      prisma.trip.count({ where: whereClause })
+    ]);
 
     // Format the response to calculate available seats
     const formattedTrips = trips.map(trip => {
@@ -63,7 +73,16 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
       };
     });
 
-    res.json({ success: true, trips: formattedTrips });
+    res.json({ 
+      success: true, 
+      trips: formattedTrips,
+      pagination: {
+        total,
+        page: pageNumber,
+        limit: pageSize,
+        totalPages: Math.ceil(total / pageSize)
+      }
+    });
   } catch (error) {
     next(error);
   }

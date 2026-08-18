@@ -22,6 +22,8 @@ model User {
   notifications Notification[]
   sentPackages  Package[]       @relation("SenderPackages")
   reservations  Reservation[]
+
+  @@index([role])
 }
 
 model Trip {
@@ -35,6 +37,8 @@ model Trip {
   boardingPoints BoardingPoint[]
   buses          Bus[]
   packages       Package[]
+
+  @@index([date, status])
 }
 
 model Bus {
@@ -71,6 +75,9 @@ model Reservation {
   ticket          Ticket?
 
   @@unique([busId, seatNumber])
+  @@index([userId])
+  @@index([busId])
+  @@index([status])
 }
 
 model Payment {
