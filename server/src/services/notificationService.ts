@@ -87,7 +87,8 @@ export const sendTicketSMS = async (user: any, ticket: any, reservation: any) =>
   const { bus } = reservation;
   const { trip } = bus;
   
-  const smsMessage = `BTS: Billet ${ticket.ticketCode} confirmé. Trajet: ${trip.departure}-${trip.destination} le ${new Date(trip.date).toLocaleDateString('fr-FR')} à ${trip.departureTime || new Date(trip.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}. Bus: ${bus.busNumber}. Lieu: ${reservation.boardingPoint || 'Gare routière'}.`;
+  // Texte optimisé (sans accents complexes) pour tenir sur 1 seul SMS et coûter moins cher
+  const smsMessage = `Baol Trans Services : Place confirmee !\nBillet : ${ticket.ticketCode}\nTrajet : ${trip.departure} vers ${trip.destination}\nDate : ${new Date(trip.date).toLocaleDateString('fr-FR')} a ${trip.departureTime || new Date(trip.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}\nLieu : ${reservation.boardingPoint || 'Gare'}\nBus : ${bus.busNumber}\nBon voyage !`;
 
   if (!user.phoneNumber) {
     console.log(`[SMS] Numéro de téléphone manquant pour ${user.firstName}`);
