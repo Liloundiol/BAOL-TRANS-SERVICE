@@ -144,8 +144,19 @@ const TripsManagementPage: React.FC = () => {
     if (!trip) return false;
     const dep = trip.departure || '';
     const dest = trip.destination || '';
-    return dep.toLowerCase().includes((searchQuery || '').toLowerCase()) || 
-           dest.toLowerCase().includes((searchQuery || '').toLowerCase());
+    const date = trip.date ? new Date(trip.date).toLocaleDateString('fr-FR') : '';
+    const time = trip.time ? new Date(trip.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+    const status = trip.status || '';
+    const bus = trip.buses && trip.buses.length > 0 ? trip.buses.find((b:any) => b.status === 'AVAILABLE')?.busNumber || '' : '';
+    
+    const term = (searchQuery || '').toLowerCase();
+    
+    return dep.toLowerCase().includes(term) || 
+           dest.toLowerCase().includes(term) ||
+           date.includes(term) ||
+           time.includes(term) ||
+           status.toLowerCase().includes(term) ||
+           bus.toLowerCase().includes(term);
   });
 
   const formatSafeDate = (dateString: string) => {
@@ -168,10 +179,11 @@ const TripsManagementPage: React.FC = () => {
     { header: 'Départ', accessor: (row) => <strong>{row.departure || '-'}</strong>, sortAccessor: (row) => row.departure || '' },
     { header: 'Destination', accessor: (row) => <strong>{row.destination || '-'}</strong>, sortAccessor: (row) => row.destination || '' },
     { header: 'Date', accessor: (row) => formatSafeDate(row.date), sortAccessor: (row) => new Date(row.date || 0).getTime() },
-    { header: 'Heure', accessor: (row) => formatSafeTime(row.time) },
+    { header: 'Heure', accessor: (row) => formatSafeTime(row.time), sortAccessor: (row) => row.time || '' },
     { header: 'Prix', accessor: (row) => `${row.price || 0} FCFA`, sortAccessor: (row) => Number(row.price || 0) },
     { 
       header: 'Statut', 
+      sortAccessor: (row) => row.status || '',
       accessor: (row) => {
         let badgeClass = 'badge-warning';
         let statusText = 'En attente';

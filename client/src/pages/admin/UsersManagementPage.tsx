@@ -6,6 +6,7 @@ import { Select } from '../../components/shared/Select';
 import { DataTable } from '../../components/admin/DataTable';
 import type { Column } from '../../components/admin/DataTable';
 import { apiFetch } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import './AdminPages.css';
 
 interface User {
@@ -19,6 +20,7 @@ interface User {
 }
 
 const UsersManagementPage: React.FC = () => {
+  const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -194,7 +196,7 @@ const UsersManagementPage: React.FC = () => {
                 <button className="icon-btn" title="Modifier" style={{ color: 'var(--color-primary)' }} onClick={() => handleOpenModal(row)}>
                   <Edit2 size={18} />
                 </button>
-                {row.role !== 'ADMIN' && (
+                {row.id !== user?.id && (
                   <button className="icon-btn" title="Supprimer" style={{ color: '#DC2626' }} onClick={() => handleDelete(row.id)}>
                     <Trash2 size={18} />
                   </button>
