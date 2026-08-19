@@ -50,7 +50,7 @@ const StudentDashboard: React.FC = () => {
         setReviewMessage({ type: 'success', text: 'Merci pour votre avis !' });
         setComment('');
       } else {
-        setReviewMessage({ type: 'error', text: response.message || 'Erreur lors de l\\'envoi.' });
+        setReviewMessage({ type: 'error', text: response.message || "Erreur lors de l'envoi." });
       }
     } catch (error: any) {
       setReviewMessage({ type: 'error', text: error.message || 'Une erreur est survenue.' });
