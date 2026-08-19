@@ -109,24 +109,17 @@ const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string
           <li style={{ marginBottom: '0.5rem' }}>Payez <strong>{trip.price} FCFA</strong> au numéro : <strong style={{color: '#111827', fontSize: '1.1em'}}>{import.meta.env.VITE_WAVE_MERCHANT_PHONE || '77 000 00 00'}</strong></li>
         </ol>
 
-        {import.meta.env.VITE_WAVE_MERCHANT_LINK && (
-          <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-            <Button 
-              variant="outline" 
-              fullWidth 
-              onClick={() => window.open(import.meta.env.VITE_WAVE_MERCHANT_LINK, '_blank')}
-            >
-              🔗 Payer via le lien Wave
-            </Button>
-          </div>
-        )}
-        
         <Button 
           variant="primary" 
           fullWidth 
-          onClick={() => onPay()}
+          onClick={() => {
+            if (import.meta.env.VITE_WAVE_MERCHANT_LINK) {
+              window.open(import.meta.env.VITE_WAVE_MERCHANT_LINK, '_blank');
+            }
+            onPay();
+          }}
         >
-          Confirmer ma réservation
+          🔗 Payer et confirmer ma réservation
         </Button>
       </div>
     </div>
