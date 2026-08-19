@@ -167,7 +167,7 @@ const LandingPage: React.FC = () => {
             <div className="feature-card">
               <div className="feature-icon"><ShieldCheck size={32} /></div>
               <h3>Confort & Sécurité</h3>
-              <p>Des bus climatisés, récents et rigoureusement entretenus pour un voyage en toute sérénité.</p>
+              <p>Voyagez en toute sécurité dans nos véhicules modernes, contrôlés avant chaque départ pour vous garantir un confort optimal.</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon"><Clock size={32} /></div>
