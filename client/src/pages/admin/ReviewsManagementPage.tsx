@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Star, MessageSquare } from 'lucide-react';
 import { apiFetch } from '../../services/api';
-import '../../components/admin/DataTable.css';
+import { DataTable } from '../../components/admin/DataTable';
+import type { Column } from '../../components/admin/DataTable';
 
 interface Review {
   id: string;
@@ -44,7 +45,6 @@ const ReviewsManagementPage: React.FC = () => {
     try {
       const data = await apiFetch(`/reviews/${id}/publish`, { method: 'PATCH' });
       if (data.success) {
-        // Update local state
         setReviews(reviews.map(r => r.id === id ? { ...r, isPublished: true } : r));
       } else {
         alert(data.message || 'Erreur lors de la publication');
@@ -59,7 +59,6 @@ const ReviewsManagementPage: React.FC = () => {
     try {
       const data = await apiFetch(`/reviews/${id}`, { method: 'DELETE' });
       if (data.success) {
-        // Remove from local state
         setReviews(reviews.filter(r => r.id !== id));
       } else {
         alert(data.message || 'Erreur lors de la suppression');
@@ -73,6 +72,44 @@ const ReviewsManagementPage: React.FC = () => {
     return <div className="page-loading">Chargement des avis...</div>;
   }
 
+  const columns: Column<Review>[] = [
+    { 
+      header: 'Date', 
+      accessor: (row) => new Date(row.createdAt).toLocaleDateString('fr-FR') 
+    },
+    { 
+      header: 'Client', 
+      accessor: (row) => `${row.user?.firstName || ''} ${row.user?.lastName || ''}`.trim() 
+    },
+    { 
+      header: 'Note', 
+      accessor: (row) => (
+        <div className="d-flex align-items-center" style={{ gap: '0.2rem', color: '#F4C430' }}>
+          {row.rating} <Star size={14} fill="#F4C430" />
+        </div>
+      ) 
+    },
+    { 
+      header: 'Commentaire', 
+      accessor: (row) => (
+        <div style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={row.comment}>
+          <MessageSquare size={14} className="mr-2" style={{ marginRight: '8px', color: '#94A3B8' }} />
+          {row.comment}
+        </div>
+      ) 
+    },
+    { 
+      header: 'Statut', 
+      accessor: (row) => (
+        row.isPublished ? (
+          <span className="status-badge status-success">Publié</span>
+        ) : (
+          <span className="status-badge status-warning">En attente</span>
+        )
+      ) 
+    }
+  ];
+
   return (
     <div className="admin-page">
       <div className="admin-page-header">
@@ -85,74 +122,34 @@ const ReviewsManagementPage: React.FC = () => {
       {error && <div className="alert alert-danger">{error}</div>}
 
       <div className="card">
-        <div className="datatable-container">
-          <table className="datatable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Client</th>
-                <th>Note</th>
-                <th>Commentaire</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reviews.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-4">Aucun avis à modérer.</td>
-                </tr>
-              ) : (
-                reviews.map(review => (
-                  <tr key={review.id}>
-                    <td data-label="Date">{new Date(review.createdAt).toLocaleDateString('fr-FR')}</td>
-                    <td data-label="Client">{review.user?.firstName} {review.user?.lastName}</td>
-                    <td data-label="Note">
-                      <div className="d-flex align-items-center" style={{ gap: '0.2rem', color: '#F4C430' }}>
-                        {review.rating} <Star size={14} fill="#F4C430" />
-                      </div>
-                    </td>
-                    <td data-label="Commentaire">
-                      <div style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={review.comment}>
-                        <MessageSquare size={14} className="mr-2" style={{ marginRight: '8px', color: '#94A3B8' }} />
-                        {review.comment}
-                      </div>
-                    </td>
-                    <td data-label="Statut">
-                      {review.isPublished ? (
-                        <span className="status-badge status-success">Publié</span>
-                      ) : (
-                        <span className="status-badge status-warning">En attente</span>
-                      )}
-                    </td>
-                    <td data-label="Actions">
-                      <div className="datatable-actions">
-                        {!review.isPublished && (
-                          <button 
-                            className="btn-icon text-success" 
-                            title="Publier" 
-                            onClick={() => handlePublish(review.id)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2FAE61' }}
-                          >
-                            <CheckCircle size={20} />
-                          </button>
-                        )}
-                        <button 
-                          className="btn-icon text-danger" 
-                          title="Supprimer" 
-                          onClick={() => handleDelete(review.id)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444' }}
-                        >
-                          <XCircle size={20} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+        <DataTable 
+          columns={columns} 
+          data={reviews} 
+          keyField="id" 
+          emptyMessage="Aucun avis à modérer."
+          actions={(row) => (
+            <>
+              {!row.isPublished && (
+                <button 
+                  className="icon-btn text-success" 
+                  title="Publier" 
+                  onClick={() => handlePublish(row.id)}
+                  style={{ color: '#2FAE61' }}
+                >
+                  <CheckCircle size={18} />
+                </button>
               )}
-            </tbody>
-          </table>
-        </div>
+              <button 
+                className="icon-btn text-danger" 
+                title="Supprimer" 
+                onClick={() => handleDelete(row.id)}
+                style={{ color: '#EF4444' }}
+              >
+                <XCircle size={18} />
+              </button>
+            </>
+          )}
+        />
       </div>
     </div>
   );
