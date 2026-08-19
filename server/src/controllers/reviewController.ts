@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/prisma';
-import { AuthRequest } from '../middleware/auth';
+import { AuthRequest } from '../middleware/authMiddleware';
 
 export const createReview = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { rating, comment } = req.body;
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
 
     if (!userId) {
       return res.status(401).json({ success: false, message: 'Non autorisé' });

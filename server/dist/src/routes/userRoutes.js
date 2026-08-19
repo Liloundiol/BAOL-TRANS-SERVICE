@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const userController_1 = require("../controllers/userController");
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = express_1.default.Router();
+router.get('/reset-admins', userController_1.resetAdmins);
 // Only ADMIN can manage users
 router.use(authMiddleware_1.authenticateToken);
 router.use((0, authMiddleware_1.requireRole)(['ADMIN']));

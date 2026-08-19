@@ -44,7 +44,7 @@ export const addLoyaltyPoints = async (userId: string, points: number, descripti
 
     return { success: true, newTotal, tier };
   } catch (error) {
-    console.error('Erreur lors de l\\'ajout des points de fidélité:', error);
+    console.error("Erreur lors de l'ajout des points de fidélité:", error);
     return { success: false, error };
   }
 };

@@ -8,6 +8,7 @@ const prisma_1 = __importDefault(require("../config/prisma"));
 const crypto_1 = __importDefault(require("crypto"));
 const notificationService_1 = require("../services/notificationService");
 const paymentService_1 = require("../services/paymentService");
+const loyaltyService_1 = require("../services/loyaltyService");
 const createReservation = async (req, res, next) => {
     try {
         const { tripId, boardingPoint, dropoffPoint, seatNumber, paymentProofUrl } = req.body;
@@ -207,6 +208,8 @@ const payReservation = async (req, res, next) => {
         if (fullReservation && createdTicket) {
             await (0, notificationService_1.sendTicketEmail)(fullReservation.user, createdTicket, fullReservation);
             await (0, notificationService_1.sendTicketSMS)(fullReservation.user, createdTicket, fullReservation);
+            // Add 10 loyalty points
+            await (0, loyaltyService_1.addLoyaltyPoints)(fullReservation.userId, 10, `Réservation confirmée : ${fullReservation.bus.trip.departure} -> ${fullReservation.bus.trip.destination}`);
         }
         res.json({ success: true, message: 'Paiement effectué avec succès et billet généré', ticket: createdTicket });
     }
@@ -382,6 +385,8 @@ const updateReservationStatus = async (req, res, next) => {
             if (fullReservation && createdTicket) {
                 await (0, notificationService_1.sendTicketEmail)(fullReservation.user, createdTicket, fullReservation);
                 await (0, notificationService_1.sendTicketSMS)(fullReservation.user, createdTicket, fullReservation);
+                // Add 10 loyalty points
+                await (0, loyaltyService_1.addLoyaltyPoints)(fullReservation.userId, 10, `Réservation confirmée par l'admin : ${fullReservation.bus.trip.departure} -> ${fullReservation.bus.trip.destination}`);
             }
         }
         else {

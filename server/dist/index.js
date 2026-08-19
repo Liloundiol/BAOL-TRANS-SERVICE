@@ -15,6 +15,7 @@ const userRoutes_1 = __importDefault(require("./src/routes/userRoutes"));
 const financeRoutes_1 = __importDefault(require("./src/routes/financeRoutes"));
 const uploadRoutes_1 = __importDefault(require("./src/routes/uploadRoutes"));
 const packageRoutes_1 = __importDefault(require("./src/routes/packageRoutes"));
+const reviewRoutes_1 = __importDefault(require("./src/routes/reviewRoutes"));
 const errorHandler_1 = require("./src/middleware/errorHandler");
 const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
@@ -36,6 +37,7 @@ app.use('/api/users', userRoutes_1.default);
 app.use('/api/finance', financeRoutes_1.default);
 app.use('/api/upload', uploadRoutes_1.default);
 app.use('/api/packages', packageRoutes_1.default);
+app.use('/api/reviews', reviewRoutes_1.default);
 // Global Error Handler (must be after all routes)
 app.use(errorHandler_1.errorHandler);
 app.listen(PORT, '0.0.0.0', () => {

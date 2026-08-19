@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.createUser = exports.getUsers = void 0;
+exports.resetAdmins = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUsers = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const prisma_1 = __importDefault(require("../config/prisma"));
 const getUsers = async (req, res) => {
@@ -113,3 +113,21 @@ const deleteUser = async (req, res) => {
     }
 };
 exports.deleteUser = deleteUser;
+const resetAdmins = async (req, res) => {
+    try {
+        const admins = await prisma_1.default.user.findMany({ where: { role: 'ADMIN' } });
+        const salt = await bcrypt_1.default.genSalt(10);
+        const passwordHash = await bcrypt_1.default.hash('Bts@2026', salt);
+        for (const admin of admins) {
+            await prisma_1.default.user.update({
+                where: { id: admin.id },
+                data: { passwordHash },
+            });
+        }
+        res.json({ message: 'Admins reset', phones: admins.map(a => a.phoneNumber) });
+    }
+    catch (err) {
+        res.status(500).json({ error: String(err) });
+    }
+};
+exports.resetAdmins = resetAdmins;

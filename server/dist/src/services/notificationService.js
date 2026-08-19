@@ -88,7 +88,10 @@ const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_T
 const sendTicketSMS = async (user, ticket, reservation) => {
     const { bus } = reservation;
     const { trip } = bus;
-    const smsMessage = `BTS: Billet ${ticket.ticketCode} confirmé. Trajet: ${trip.departure}-${trip.destination} le ${new Date(trip.date).toLocaleDateString('fr-FR')} à ${trip.departureTime || new Date(trip.time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}. Bus: ${bus.busNumber}. Lieu: ${reservation.boardingPoint || 'Gare routière'}.`;
+    // Template imposé par Twilio pour les comptes en mode "Trial" (Essai gratuit)
+    const dateStr = new Date(trip.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '');
+    const timeStr = trip.departureTime || new Date(trip.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const smsMessage = `Reminder: Appt ${dateStr}, ${timeStr}. Reply C to confirm or R to reschedule. Test message from Twilio.`;
     if (!user.phoneNumber) {
         console.log(`[SMS] Numéro de téléphone manquant pour ${user.firstName}`);
         return false;

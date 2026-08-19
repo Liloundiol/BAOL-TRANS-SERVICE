@@ -7,7 +7,7 @@ const router = (0, express_1.Router)();
 // Routes
 router.get('/', tripController_1.getTrips);
 router.get('/:id', tripController_1.getTripById);
-router.post('/', authMiddleware_1.authenticateToken, tripController_1.createTrip);
-router.put('/:id', authMiddleware_1.authenticateToken, tripController_1.updateTrip);
-router.delete('/:id', authMiddleware_1.authenticateToken, tripController_1.deleteTrip);
+router.post('/', authMiddleware_1.authenticateToken, (0, authMiddleware_1.requireRole)(['ADMIN']), tripController_1.createTrip);
+router.put('/:id', authMiddleware_1.authenticateToken, (0, authMiddleware_1.requireRole)(['ADMIN']), tripController_1.updateTrip);
+router.delete('/:id', authMiddleware_1.authenticateToken, (0, authMiddleware_1.requireRole)(['ADMIN']), tripController_1.deleteTrip);
 exports.default = router;
