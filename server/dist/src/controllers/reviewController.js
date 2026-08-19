@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLatestReviews = exports.createReview = void 0;
+exports.deleteReview = exports.publishReview = exports.getAdminReviews = exports.getLatestReviews = exports.createReview = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const createReview = async (req, res, next) => {
     try {
@@ -57,7 +57,8 @@ const getLatestReviews = async (req, res, next) => {
             where: {
                 rating: {
                     gte: 4
-                }
+                },
+                isPublished: true
             },
             orderBy: {
                 createdAt: 'desc'
@@ -79,3 +80,60 @@ const getLatestReviews = async (req, res, next) => {
     }
 };
 exports.getLatestReviews = getLatestReviews;
+const getAdminReviews = async (req, res, next) => {
+    try {
+        const reviews = await prisma_1.default.review.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            },
+            include: {
+                user: {
+                    select: {
+                        firstName: true,
+                        lastName: true
+                    }
+                }
+            }
+        });
+        res.json({ success: true, reviews });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.getAdminReviews = getAdminReviews;
+const publishReview = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const review = await prisma_1.default.review.update({
+            where: { id: id },
+            data: { isPublished: true },
+            include: {
+                user: {
+                    select: {
+                        firstName: true,
+                        lastName: true
+                    }
+                }
+            }
+        });
+        res.json({ success: true, message: 'Avis publié avec succès', review });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.publishReview = publishReview;
+const deleteReview = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        await prisma_1.default.review.delete({
+            where: { id: id }
+        });
+        res.json({ success: true, message: 'Avis supprimé avec succès' });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.deleteReview = deleteReview;

@@ -110,7 +110,7 @@ export const publishReview = async (req: AuthRequest, res: Response, next: NextF
     const { id } = req.params;
 
     const review = await prisma.review.update({
-      where: { id },
+      where: { id: id as string },
       data: { isPublished: true },
       include: {
         user: {
@@ -133,7 +133,7 @@ export const deleteReview = async (req: AuthRequest, res: Response, next: NextFu
     const { id } = req.params;
 
     await prisma.review.delete({
-      where: { id }
+      where: { id: id as string }
     });
 
     res.json({ success: true, message: 'Avis supprimé avec succès' });
