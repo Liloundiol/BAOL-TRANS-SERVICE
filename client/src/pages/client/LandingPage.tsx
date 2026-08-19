@@ -156,6 +156,10 @@ const LandingPage: React.FC = () => {
             </div>
           )}
         </section>
+      </main>
+
+      {/* Sections étendues (Features & Reviews) */}
+      <div className="pro-extended-content">
         {/* Pourquoi choisir BTS */}
         <section className="pro-features">
           <h2 className="section-title text-center" style={{ textAlign: 'center', marginBottom: '2rem' }}>Pourquoi choisir Baol Trans Services ?</h2>
@@ -197,7 +201,7 @@ const LandingPage: React.FC = () => {
             </div>
           </section>
         )}
-      </main>
+      </div>
     </div>
   );
 };
