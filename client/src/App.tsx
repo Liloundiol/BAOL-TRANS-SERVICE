@@ -12,6 +12,7 @@ import UsersManagementPage from './pages/admin/UsersManagementPage';
 import ReservationsManagementPage from './pages/admin/ReservationsManagementPage';
 import FinanceManagementPage from './pages/admin/FinanceManagementPage';
 import PackagesManagementPage from './pages/admin/PackagesManagementPage';
+import ReviewsManagementPage from './pages/admin/ReviewsManagementPage';
 import SearchTripsPage from './pages/client/SearchTripsPage';
 import BookingFlow from './pages/client/BookingFlow';
 import TicketPage from './pages/client/TicketPage';
@@ -60,6 +61,7 @@ function App() {
             <Route path="packages" element={<PackagesManagementPage />} />
             <Route path="reservations" element={<ReservationsManagementPage />} />
             <Route path="finance" element={<FinanceManagementPage />} />
+            <Route path="reviews" element={<ReviewsManagementPage />} />
             {/* We will add more admin routes here later */}
           </Route>
         </Routes>

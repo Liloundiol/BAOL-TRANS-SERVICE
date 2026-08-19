@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Route, Bus, Users, LogOut, DollarSign, Menu, Bell, User, QrCode, Package } from 'lucide-react';
+import { LayoutDashboard, Route, Bus, Users, LogOut, DollarSign, Menu, Bell, User, QrCode, Package, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './AdminLayout.css';
 
@@ -35,6 +35,7 @@ const AdminLayout: React.FC = () => {
     { path: '/admin/users', icon: <User size={20} />, label: 'Utilisateurs', roles: ['ADMIN'] },
     { path: '/admin/packages', icon: <Package size={20} />, label: 'Colis', roles: ['ADMIN', 'AGENT'] },
     { path: '/admin/finance', icon: <DollarSign size={20} />, label: 'Finance', roles: ['ADMIN'] },
+    { path: '/admin/reviews', icon: <MessageSquare size={20} />, label: 'Avis', roles: ['ADMIN'] },
   ];
 
   const sidebarLinks = allSidebarLinks.filter(link => link.roles.includes(user?.role || ''));

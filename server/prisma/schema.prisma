@@ -150,12 +150,13 @@ model Package {
 }
 
 model Review {
-  id        String   @id @default(uuid())
-  userId    String
-  rating    Int
-  comment   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id          String   @id @default(uuid())
+  userId      String
+  rating      Int
+  comment     String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 enum Role {

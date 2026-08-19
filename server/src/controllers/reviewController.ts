@@ -60,7 +60,8 @@ export const getLatestReviews = async (req: Request, res: Response, next: NextFu
       where: {
         rating: {
           gte: 4
-        }
+        },
+        isPublished: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -77,6 +78,65 @@ export const getLatestReviews = async (req: Request, res: Response, next: NextFu
     });
 
     res.json({ success: true, reviews });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdminReviews = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const reviews = await prisma.review.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    });
+
+    res.json({ success: true, reviews });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const publishReview = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const review = await prisma.review.update({
+      where: { id },
+      data: { isPublished: true },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    });
+
+    res.json({ success: true, message: 'Avis publié avec succès', review });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteReview = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.review.delete({
+      where: { id }
+    });
+
+    res.json({ success: true, message: 'Avis supprimé avec succès' });
   } catch (error) {
     next(error);
   }
