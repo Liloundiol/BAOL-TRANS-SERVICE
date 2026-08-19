@@ -98,14 +98,17 @@ const LandingPage: React.FC = () => {
         <section className="pro-quick-actions">
           <h3 className="section-subtitle">Trajets populaires</h3>
           <div className="chips-container">
-            <button className="pro-chip" onClick={() => navigate('/search?from=Dakar&to=Saint-Louis')}>
-              Dakar <ArrowRight size={14} /> Saint-Louis
+            <button className="pro-chip" onClick={() => navigate('/search?from=Touba/Mbacké&to=UGB')}>
+              Touba/Mbacké <ArrowRight size={14} /> UGB
             </button>
-            <button className="pro-chip" onClick={() => navigate('/search?from=Saint-Louis&to=Dakar')}>
-              Saint-Louis <ArrowRight size={14} /> Dakar
+            <button className="pro-chip" onClick={() => navigate('/search?from=UGB&to=Touba/Mbacké')}>
+              UGB <ArrowRight size={14} /> Touba/Mbacké
             </button>
-            <button className="pro-chip" onClick={() => navigate('/search?from=Dakar&to=Touba')}>
-              Dakar <ArrowRight size={14} /> Touba
+            <button className="pro-chip" onClick={() => navigate('/search?from=Diourbel&to=UGB')}>
+              Diourbel <ArrowRight size={14} /> UGB
+            </button>
+            <button className="pro-chip" onClick={() => navigate('/search?from=UGB&to=Diourbel')}>
+              UGB <ArrowRight size={14} /> Diourbel
             </button>
           </div>
         </section>
