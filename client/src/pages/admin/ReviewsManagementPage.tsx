@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Star, MessageSquare } from 'lucide-react';
 import { apiFetch } from '../../services/api';
+import '../../components/admin/DataTable.css';
 
 interface Review {
   id: string;
@@ -83,9 +84,9 @@ const ReviewsManagementPage: React.FC = () => {
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      <div className="admin-card">
-        <div className="table-responsive">
-          <table className="admin-table">
+      <div className="card">
+        <div className="datatable-container">
+          <table className="datatable">
             <thead>
               <tr>
                 <th>Date</th>
@@ -125,7 +126,7 @@ const ReviewsManagementPage: React.FC = () => {
                       )}
                     </td>
                     <td>
-                      <div className="action-buttons">
+                      <div className="datatable-actions">
                         {!review.isPublished && (
                           <button 
                             className="btn-icon text-success" 
