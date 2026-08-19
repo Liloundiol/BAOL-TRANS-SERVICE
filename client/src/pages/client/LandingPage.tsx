@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { TripCard } from '../../components/cards/TripCard';
 import { apiFetch } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import { Search, MapPin, Calendar, ArrowRight, User, Bus } from 'lucide-react';
+import { Search, MapPin, Calendar, ArrowRight, User, Bus, ShieldCheck, Clock, ThumbsUp, Star } from 'lucide-react';
 import './LandingPage.css';
 
 const LandingPage: React.FC = () => {
@@ -146,6 +146,67 @@ const LandingPage: React.FC = () => {
               )}
             </div>
           )}
+        </section>
+        {/* Pourquoi choisir BTS */}
+        <section className="pro-features">
+          <h2 className="section-title text-center" style={{ textAlign: 'center', marginBottom: '2rem' }}>Pourquoi choisir Baol Trans Services ?</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon"><ShieldCheck size={32} /></div>
+              <h3>Confort & Sécurité</h3>
+              <p>Des bus climatisés, récents et rigoureusement entretenus pour un voyage en toute sérénité.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon"><Clock size={32} /></div>
+              <h3>Gagnez du temps</h3>
+              <p>Réservez votre billet en quelques clics et payez facilement via Wave, sans vous déplacer.</p>
+            </div>
+            <div className="feature-card">
+              <div className="feature-icon"><ThumbsUp size={32} /></div>
+              <h3>Service Fiable</h3>
+              <p>Des départs à l'heure, un personnel accueillant et un suivi en temps réel de vos réservations.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Avis Clients */}
+        <section className="pro-reviews" style={{ marginTop: '4rem', marginBottom: '4rem' }}>
+          <h2 className="section-title text-center" style={{ textAlign: 'center', marginBottom: '2rem' }}>Ce que disent nos clients</h2>
+          <div className="reviews-grid">
+            <div className="review-card">
+              <div className="stars">
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+              </div>
+              <p className="review-text">"Application super pratique ! J'ai pu réserver mon billet pour Touba en 2 minutes avec Wave. Fini les longues files d'attente à la gare."</p>
+              <h4 className="reviewer-name">Aminata D.</h4>
+            </div>
+            <div className="review-card">
+              <div className="stars">
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} color="#e5e7eb" />
+              </div>
+              <p className="review-text">"Les bus sont confortables et partent toujours à l'heure. Je voyage chaque semaine entre Dakar et Saint-Louis avec eux."</p>
+              <h4 className="reviewer-name">Moussa N.</h4>
+            </div>
+            <div className="review-card">
+              <div className="stars">
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+                <Star size={16} fill="#F4C430" color="#F4C430" />
+              </div>
+              <p className="review-text">"Le service client est très réactif. J'ai eu un imprévu et ils m'ont aidé à modifier ma réservation très rapidement."</p>
+              <h4 className="reviewer-name">Fatou F.</h4>
+            </div>
+          </div>
         </section>
       </main>
     </div>

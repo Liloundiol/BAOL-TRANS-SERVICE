@@ -1,5 +1,5 @@
 export const calculateLoyalty = (reservationsCount: number) => {
-  const points = reservationsCount * 50;
+  const points = reservationsCount * 10;
   
   let status = "Nouveau Client";
   let tier = "Bronze";

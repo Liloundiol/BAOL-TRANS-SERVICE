@@ -4,6 +4,7 @@ import prisma from '../config/prisma';
 import crypto from 'crypto';
 import { sendTicketEmail, sendTicketSMS } from '../services/notificationService';
 import { paymentService } from '../services/paymentService';
+import { addLoyaltyPoints } from '../services/loyaltyService';
 
 export const createReservation = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -231,6 +232,13 @@ export const payReservation = async (req: AuthRequest, res: Response, next: Next
     if (fullReservation && createdTicket) {
       await sendTicketEmail(fullReservation.user, createdTicket, fullReservation);
       await sendTicketSMS(fullReservation.user, createdTicket, fullReservation);
+      
+      // Add 10 loyalty points
+      await addLoyaltyPoints(
+        fullReservation.userId, 
+        10, 
+        `Réservation confirmée : ${fullReservation.bus.trip.departure} -> ${fullReservation.bus.trip.destination}`
+      );
     }
 
     res.json({ success: true, message: 'Paiement effectué avec succès et billet généré', ticket: createdTicket });
@@ -424,6 +432,13 @@ export const updateReservationStatus = async (req: AuthRequest, res: Response, n
       if (fullReservation && createdTicket) {
         await sendTicketEmail(fullReservation.user, createdTicket, fullReservation);
         await sendTicketSMS(fullReservation.user, createdTicket, fullReservation);
+        
+        // Add 10 loyalty points
+        await addLoyaltyPoints(
+          fullReservation.userId, 
+          10, 
+          `Réservation confirmée par l'admin : ${fullReservation.bus.trip.departure} -> ${fullReservation.bus.trip.destination}`
+        );
       }
 
     } else {
