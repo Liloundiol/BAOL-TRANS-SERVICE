@@ -22,6 +22,7 @@ model User {
   notifications Notification[]
   sentPackages  Package[]       @relation("SenderPackages")
   reservations  Reservation[]
+  reviews       Review[]
 
   @@index([role])
 }
@@ -146,6 +147,15 @@ model Package {
   sender        User          @relation("SenderPackages", fields: [senderId], references: [id])
   trip          Trip          @relation(fields: [tripId], references: [id])
   payment       Payment?
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 enum Role {

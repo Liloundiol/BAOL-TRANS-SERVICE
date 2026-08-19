@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Ticket, Star, Settings } from 'lucide-react';
+import { User, Ticket, Star, Settings, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/shared/Button';
 import { apiFetch } from '../../services/api';
@@ -10,6 +10,12 @@ const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [reservations, setReservations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Review state
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
     const fetchMyReservations = async () => {
@@ -24,6 +30,34 @@ const StudentDashboard: React.FC = () => {
     };
     fetchMyReservations();
   }, []);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!comment.trim()) {
+      setReviewMessage({ type: 'error', text: 'Veuillez écrire un commentaire.' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setReviewMessage({ type: '', text: '' });
+
+    try {
+      const response = await apiFetch('/reviews', {
+        method: 'POST',
+        body: JSON.stringify({ rating, comment })
+      });
+      if (response.success) {
+        setReviewMessage({ type: 'success', text: 'Merci pour votre avis !' });
+        setComment('');
+      } else {
+        setReviewMessage({ type: 'error', text: response.message || 'Erreur lors de l\\'envoi.' });
+      }
+    } catch (error: any) {
+      setReviewMessage({ type: 'error', text: error.message || 'Une erreur est survenue.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const paidReservationsCount = reservations.filter(r => r.status === 'PAID').length;
   const loyalty = calculateLoyalty(paidReservationsCount);
@@ -97,6 +131,46 @@ const StudentDashboard: React.FC = () => {
             </div>
           )}
         </section>
+
+        {paidReservationsCount > 0 && (
+          <section className="review-section">
+            <h2>Donnez votre avis</h2>
+            <div className="review-form-container">
+              <p>Comment s'est passé votre voyage avec Baol Trans Services ?</p>
+              
+              {reviewMessage.text && (
+                <div className={`alert ${reviewMessage.type === 'success' ? 'alert-success' : 'alert-error'}`}>
+                  {reviewMessage.text}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmitReview} className="review-form">
+                <div className="rating-select">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      className={`star-btn ${rating >= star ? 'active' : ''}`}
+                      onClick={() => setRating(star)}
+                    >
+                      <Star size={24} fill={rating >= star ? '#F4C430' : 'none'} color={rating >= star ? '#F4C430' : '#CBD5E1'} />
+                    </button>
+                  ))}
+                </div>
+                <textarea 
+                  placeholder="Partagez votre expérience..." 
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  rows={4}
+                  className="pro-input review-textarea"
+                />
+                <Button type="submit" variant="primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Envoi...' : 'Publier mon avis'}
+                </Button>
+              </form>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

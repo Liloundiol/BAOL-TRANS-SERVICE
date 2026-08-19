@@ -10,20 +10,26 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [availableTrips, setAvailableTrips] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
-    const fetchTrips = async () => {
+    const fetchData = async () => {
       try {
-        const data = await apiFetch('/trips');
-        setAvailableTrips(data.trips);
+        const [tripsData, reviewsData] = await Promise.all([
+          apiFetch('/trips'),
+          apiFetch('/reviews')
+        ]);
+        setAvailableTrips(tripsData.trips || []);
+        if (reviewsData.success && reviewsData.reviews) {
+          setReviews(reviewsData.reviews);
+        }
       } catch (error) {
-        console.error('Erreur lors du chargement des trajets:', error);
+        console.error('Erreur lors du chargement des données:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchTrips();
+    fetchData();
   }, []);
 
   return (
@@ -170,44 +176,24 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Avis Clients */}
-        <section className="pro-reviews" style={{ marginTop: '4rem', marginBottom: '4rem' }}>
-          <h2 className="section-title text-center" style={{ textAlign: 'center', marginBottom: '2rem' }}>Ce que disent nos clients</h2>
-          <div className="reviews-grid">
-            <div className="review-card">
-              <div className="stars">
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-              </div>
-              <p className="review-text">"Application super pratique ! J'ai pu réserver mon billet pour Touba en 2 minutes avec Wave. Fini les longues files d'attente à la gare."</p>
-              <h4 className="reviewer-name">Aminata D.</h4>
+        {reviews.length > 0 && (
+          <section className="pro-reviews" style={{ marginTop: '4rem', marginBottom: '4rem' }}>
+            <h2 className="section-title text-center" style={{ textAlign: 'center', marginBottom: '2rem' }}>Ce que disent nos clients</h2>
+            <div className="reviews-grid">
+              {reviews.map((review) => (
+                <div className="review-card" key={review.id}>
+                  <div className="stars">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <Star key={star} size={16} fill={star <= review.rating ? "#F4C430" : "none"} color={star <= review.rating ? "#F4C430" : "#e5e7eb"} />
+                    ))}
+                  </div>
+                  <p className="review-text">"{review.comment}"</p>
+                  <h4 className="reviewer-name">{review.user.firstName} {review.user.lastName ? review.user.lastName.charAt(0) + '.' : ''}</h4>
+                </div>
+              ))}
             </div>
-            <div className="review-card">
-              <div className="stars">
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} color="#e5e7eb" />
-              </div>
-              <p className="review-text">"Les bus sont confortables et partent toujours à l'heure. Je voyage chaque semaine entre Dakar et Saint-Louis avec eux."</p>
-              <h4 className="reviewer-name">Moussa N.</h4>
-            </div>
-            <div className="review-card">
-              <div className="stars">
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-                <Star size={16} fill="#F4C430" color="#F4C430" />
-              </div>
-              <p className="review-text">"Le service client est très réactif. J'ai eu un imprévu et ils m'ont aidé à modifier ma réservation très rapidement."</p>
-              <h4 className="reviewer-name">Fatou F.</h4>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
     </div>
   );
