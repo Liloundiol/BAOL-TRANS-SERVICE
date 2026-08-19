@@ -105,27 +105,27 @@ const ReviewsManagementPage: React.FC = () => {
               ) : (
                 reviews.map(review => (
                   <tr key={review.id}>
-                    <td>{new Date(review.createdAt).toLocaleDateString('fr-FR')}</td>
-                    <td>{review.user?.firstName} {review.user?.lastName}</td>
-                    <td>
+                    <td data-label="Date">{new Date(review.createdAt).toLocaleDateString('fr-FR')}</td>
+                    <td data-label="Client">{review.user?.firstName} {review.user?.lastName}</td>
+                    <td data-label="Note">
                       <div className="d-flex align-items-center" style={{ gap: '0.2rem', color: '#F4C430' }}>
                         {review.rating} <Star size={14} fill="#F4C430" />
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Commentaire">
                       <div style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={review.comment}>
                         <MessageSquare size={14} className="mr-2" style={{ marginRight: '8px', color: '#94A3B8' }} />
                         {review.comment}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Statut">
                       {review.isPublished ? (
                         <span className="status-badge status-success">Publié</span>
                       ) : (
                         <span className="status-badge status-warning">En attente</span>
                       )}
                     </td>
-                    <td>
+                    <td data-label="Actions">
                       <div className="datatable-actions">
                         {!review.isPublished && (
                           <button 
