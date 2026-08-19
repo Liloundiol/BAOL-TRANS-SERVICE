@@ -191,7 +191,7 @@ const LandingPage: React.FC = () => {
                     ))}
                   </div>
                   <p className="review-text">"{review.comment}"</p>
-                  <h4 className="reviewer-name">{review.user.firstName} {review.user.lastName ? review.user.lastName.charAt(0) + '.' : ''}</h4>
+                  <h4 className="reviewer-name">{review.user?.firstName || 'Utilisateur'} {review.user?.lastName ? review.user.lastName.charAt(0) + '.' : ''}</h4>
                 </div>
               ))}
             </div>
