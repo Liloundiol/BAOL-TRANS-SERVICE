@@ -15,19 +15,22 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tripsData, reviewsData] = await Promise.all([
-          apiFetch('/trips'),
-          apiFetch('/reviews')
-        ]);
+        const tripsData = await apiFetch('/trips');
         setAvailableTrips(tripsData.trips || []);
+      } catch (error) {
+        console.error('Erreur lors du chargement des trajets:', error);
+      }
+      
+      try {
+        const reviewsData = await apiFetch('/reviews');
         if (reviewsData.success && reviewsData.reviews) {
           setReviews(reviewsData.reviews);
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
-      } finally {
-        setIsLoading(false);
+        console.error('Erreur lors du chargement des avis:', error);
       }
+      
+      setIsLoading(false);
     };
     fetchData();
   }, []);
