@@ -6,8 +6,8 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-router.get('/', requireRole(['ADMIN', 'AGENT']), getPackages);
-router.post('/', requireRole(['ADMIN', 'AGENT']), createPackage);
+router.get('/', requireRole(['ADMIN', 'AGENT', 'STUDENT']), getPackages);
+router.post('/', requireRole(['ADMIN', 'AGENT', 'STUDENT']), createPackage);
 router.patch('/:id/status', requireRole(['ADMIN', 'AGENT']), updatePackageStatus);
 router.delete('/:id', requireRole(['ADMIN']), deletePackage);
 

@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 export const getPackages = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const packages = await prisma.package.findMany({
+      where: req.user?.role === 'STUDENT' ? { senderId: req.user.userId } : undefined,
       include: {
         sender: true,
         trip: true
@@ -26,15 +27,24 @@ export const createPackage = async (req: AuthRequest, res: Response, next: NextF
   try {
     const { senderId, tripId, receiverPhone, receiverName, description, weight, price } = req.body;
 
+    let finalSenderId = senderId;
+    let finalPrice = price;
+
+    if (req.user?.role === 'STUDENT') {
+      finalSenderId = req.user.userId;
+      // Prix calculé automatiquement pour les étudiants : 500 FCFA/kg (minimum 1000 FCFA)
+      finalPrice = Math.max(1000, weight * 500);
+    }
+
     const newPackage = await prisma.package.create({
       data: {
-        senderId,
+        senderId: finalSenderId,
         tripId,
         receiverPhone,
         receiverName,
         description,
         weight,
-        price,
+        price: finalPrice,
         status: 'PENDING'
       },
       include: {

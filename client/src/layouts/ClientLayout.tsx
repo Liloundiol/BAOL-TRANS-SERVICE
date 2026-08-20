@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Search, Ticket, User, MessageCircle } from 'lucide-react';
+import { Home, Search, Ticket, User, MessageCircle, Package as PackageIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Footer } from '../components/shared/Footer';
 import './ClientLayout.css';
@@ -13,6 +13,7 @@ const ClientLayout: React.FC = () => {
     { path: '/', icon: <Home size={24} />, label: 'Accueil' },
     { path: '/search', icon: <Search size={24} />, label: 'Rechercher' },
     { path: '/dashboard', icon: <Ticket size={24} />, label: 'Mes Billets' },
+    { path: '/my-packages', icon: <PackageIcon size={24} />, label: 'Mes Colis' },
     { 
       path: isAuthenticated ? (user?.role === 'ADMIN' ? '/admin/dashboard' : '/profile') : '/auth', 
       icon: <User size={24} />, 

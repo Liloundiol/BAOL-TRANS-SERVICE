@@ -53,7 +53,12 @@ export const getRecentPayments = async (req: Request, res: Response): Promise<vo
             bus: { include: { trip: { select: { departure: true, destination: true } } } }
           }
         },
-        package: true // In case there are package payments
+        package: {
+          include: {
+            sender: { select: { firstName: true, lastName: true, phoneNumber: true } },
+            trip: { select: { departure: true, destination: true } }
+          }
+        }
       },
       take: 100 // Limit to recent 100 to avoid huge payloads
     });

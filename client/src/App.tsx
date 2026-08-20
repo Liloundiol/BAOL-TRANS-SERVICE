@@ -24,6 +24,8 @@ import PaymentMockPage from './pages/client/PaymentMockPage';
 import ProfilePage from './pages/client/ProfilePage';
 import PrivacyPage from './pages/client/PrivacyPage';
 import TermsPage from './pages/client/TermsPage';
+import SendPackagePage from './pages/client/SendPackagePage';
+import MyPackagesPage from './pages/client/MyPackagesPage';
 import { ProtectedRoute } from './components/shared/ProtectedRoute';
 
 function App() {
@@ -45,6 +47,8 @@ function App() {
             <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="privacy" element={<PrivacyPage />} />
             <Route path="terms" element={<TermsPage />} />
+            <Route path="send-package" element={<ProtectedRoute><SendPackagePage /></ProtectedRoute>} />
+            <Route path="my-packages" element={<ProtectedRoute><MyPackagesPage /></ProtectedRoute>} />
             {/* Fallback for cached old links */}
             <Route path="tickets" element={<Navigate to="/dashboard" replace />} />
           </Route>

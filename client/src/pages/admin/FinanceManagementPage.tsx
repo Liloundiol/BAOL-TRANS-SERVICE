@@ -32,6 +32,17 @@ interface Payment {
       };
     };
   };
+  package?: {
+    sender: {
+      firstName: string | null;
+      lastName: string | null;
+      phoneNumber: string;
+    };
+    trip: {
+      departure: string;
+      destination: string;
+    };
+  };
 }
 
 const FinanceManagementPage: React.FC = () => {
@@ -74,17 +85,25 @@ const FinanceManagementPage: React.FC = () => {
     { 
       header: 'Passager', 
       accessor: (row) => {
-        if (!row.reservation) return <span style={{ color: 'var(--color-gray-disabled)' }}>N/A</span>;
-        const { firstName, lastName, phoneNumber } = row.reservation.user;
-        const name = firstName || lastName ? `${firstName || ''} ${lastName || ''}`.trim() : phoneNumber;
-        return <strong>{name}</strong>;
+        if (row.reservation) {
+          const { firstName, lastName, phoneNumber } = row.reservation.user;
+          const name = firstName || lastName ? `${firstName || ''} ${lastName || ''}`.trim() : phoneNumber;
+          return <strong>{name}</strong>;
+        }
+        if (row.package) {
+          const { firstName, lastName, phoneNumber } = row.package.sender;
+          const name = firstName || lastName ? `${firstName || ''} ${lastName || ''}`.trim() : phoneNumber;
+          return <strong>{name} <span className="badge badge-warning" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', marginLeft: '0.25rem' }}>COLIS</span></strong>;
+        }
+        return <span style={{ color: 'var(--color-gray-disabled)' }}>N/A</span>;
       }
     },
     { 
       header: 'Trajet', 
       accessor: (row) => {
-        if (!row.reservation) return <span style={{ color: 'var(--color-gray-disabled)' }}>N/A</span>;
-        return `${row.reservation.bus.trip.departure} ➔ ${row.reservation.bus.trip.destination}`;
+        if (row.reservation) return `${row.reservation.bus.trip.departure} ➔ ${row.reservation.bus.trip.destination}`;
+        if (row.package) return `${row.package.trip.departure} ➔ ${row.package.trip.destination}`;
+        return <span style={{ color: 'var(--color-gray-disabled)' }}>N/A</span>;
       }
     },
     { 
