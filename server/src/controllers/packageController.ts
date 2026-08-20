@@ -27,12 +27,14 @@ export const createPackage = async (req: AuthRequest, res: Response, next: NextF
   try {
     const { senderId, tripId, receiverPhone, receiverName, description, weight, price } = req.body;
 
-    let finalSenderId = senderId;
+    let finalSenderId = senderId || req.user?.userId;
     let finalPrice = price;
 
     if (req.user?.role === 'STUDENT') {
-      finalSenderId = req.user.userId;
       // Prix calculé automatiquement pour les étudiants : 500 FCFA/kg (minimum 1000 FCFA)
+      finalPrice = Math.max(1000, weight * 500);
+    } else if (!finalPrice) {
+      // Fallback price for admins testing the client app
       finalPrice = Math.max(1000, weight * 500);
     }
 
