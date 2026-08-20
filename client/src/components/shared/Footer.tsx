@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
               </a>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <a href="https://whatsapp.com/channel/0029Vb8ES2q4o7qEt0GxlA2d" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <MessageCircle size={18} /> Canal WhatsApp
               </a>
             </li>
