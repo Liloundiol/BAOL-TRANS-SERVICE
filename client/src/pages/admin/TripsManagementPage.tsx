@@ -16,6 +16,8 @@ interface Trip {
   time: string;
   price: number;
   status: 'ACTIVE' | 'ARCHIVED';
+  boardingPoints?: { id: string; name: string; time: string }[];
+  dropoffPoints?: { id: string; name: string; time: string }[];
 }
 
 const TripsManagementPage: React.FC = () => {
@@ -59,15 +61,19 @@ const TripsManagementPage: React.FC = () => {
       if (editingTripId) {
         await apiFetch(`/trips/${editingTripId}`, {
           method: 'PUT',
-          body: JSON.stringify({ departure, destination, date, time, price })
+          body: JSON.stringify({
+            departure, destination, date, time, price,
+            boardingPoints: boardingPoints.filter(bp => bp.name.trim() !== ''),
+            dropoffPoints: dropoffPoints.filter(dp => dp.name.trim() !== '')
+          })
         });
       } else {
         await apiFetch('/trips', {
           method: 'POST',
           body: JSON.stringify({
             departure, destination, date, time, price, capacity: Number(capacity),
-            boardingPoints: boardingPoints.filter(bp => bp.name && bp.time),
-            dropoffPoints: dropoffPoints.filter(dp => dp.name && dp.time)
+            boardingPoints: boardingPoints.filter(bp => bp.name.trim() !== ''),
+            dropoffPoints: dropoffPoints.filter(dp => dp.name.trim() !== '')
           })
         });
       }
@@ -110,8 +116,8 @@ const TripsManagementPage: React.FC = () => {
     
     setPrice(String(trip.price));
     setCapacity('13'); // Editing capacity might not be fully supported by backend easily without updating all buses, so we leave it default
-    setBoardingPoints([{ name: '', time: '' }]); // Simplified for edit
-    setDropoffPoints([{ name: '', time: '' }]); // Simplified for edit
+    setBoardingPoints(trip.boardingPoints && trip.boardingPoints.length > 0 ? trip.boardingPoints.map(bp => ({ name: bp.name, time: bp.time })) : [{ name: '', time: '' }]);
+    setDropoffPoints(trip.dropoffPoints && trip.dropoffPoints.length > 0 ? trip.dropoffPoints.map(dp => ({ name: dp.name, time: dp.time })) : [{ name: '', time: '' }]);
     setIsModalOpen(true);
   };
 

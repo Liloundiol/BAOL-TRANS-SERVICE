@@ -224,7 +224,7 @@ export const getTripById = async (req: Request, res: Response, next: NextFunctio
 export const updateTrip = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
-    const { departure, destination, date, time, price } = req.body;
+    const { departure, destination, date, time, price, boardingPoints, dropoffPoints } = req.body;
 
     const trip = await prisma.trip.update({
       where: { id },
@@ -233,7 +233,21 @@ export const updateTrip = async (req: Request, res: Response, next: NextFunction
         destination,
         date: date ? new Date(date) : undefined,
         time: time ? new Date(`${date?.split('T')[0] || new Date().toISOString().split('T')[0]}T${time}:00Z`) : undefined,
-        price,
+        price: price ? parseFloat(price) : undefined,
+        boardingPoints: boardingPoints && Array.isArray(boardingPoints) ? {
+          deleteMany: {},
+          create: boardingPoints.map((bp: any) => ({
+            name: bp.name,
+            time: bp.time
+          }))
+        } : undefined,
+        dropoffPoints: dropoffPoints && Array.isArray(dropoffPoints) ? {
+          deleteMany: {},
+          create: dropoffPoints.map((dp: any) => ({
+            name: dp.name,
+            time: dp.time
+          }))
+        } : undefined
       }
     });
 
