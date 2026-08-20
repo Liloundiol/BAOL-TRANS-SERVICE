@@ -9,7 +9,7 @@ router.use(authenticateToken);
 
 router.get('/me', getMyReservations);
 router.get('/all', requireRole(['ADMIN', 'AGENT']), getAllReservations);
-router.get('/ticket/:ticketCode', requireRole(['ADMIN', 'AGENT', 'CONTROLLER']), getTicketByCode);
+router.get('/ticket/:ticketCode', getTicketByCode);
 router.put('/ticket/:ticketCode/use', requireRole(['ADMIN', 'AGENT', 'CONTROLLER']), markTicketAsUsed);
 router.post('/', createReservation);
 router.post('/initiate-payment', initiatePayment);

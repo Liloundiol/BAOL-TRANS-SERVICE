@@ -21,9 +21,13 @@ const TicketPage: React.FC = () => {
       try {
         const response = await apiFetch(`/reservations/ticket/${id}`);
         
+        const reservation = response.ticket.reservation;
+        const trip = reservation.bus.trip;
+        const user = reservation.user;
+
         // Format the dates
-        const dateObj = new Date(response.ticket.date);
-        const timeObj = new Date(response.ticket.time);
+        const dateObj = new Date(trip.date);
+        const timeObj = new Date(trip.time);
         const formattedDate = dateObj.toLocaleDateString('fr-FR', { 
           day: 'numeric', month: 'long', year: 'numeric' 
         });
@@ -33,9 +37,13 @@ const TicketPage: React.FC = () => {
 
         setTicketData({
           ...response.ticket,
+          boardingPoint: reservation.boardingPoint || trip.departure,
+          dropoffPoint: reservation.dropoffPoint || trip.destination,
+          passenger: `${user.firstName} ${user.lastName}`,
+          seatNumber: reservation.seatNumber,
           date: formattedDate,
           time: formattedTime,
-          price: `${response.ticket.price} FCFA`
+          price: `${trip.price} FCFA`
         });
       } catch (err: any) {
         setError(err.message || 'Erreur lors du chargement du billet');

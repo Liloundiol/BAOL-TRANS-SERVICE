@@ -357,6 +357,12 @@ export const getTicketByCode = async (req: AuthRequest, res: Response, next: Nex
       return res.status(404).json({ success: false, error: 'Billet non trouvé' });
     }
 
+    const isOwner = req.user!.userId === ticket.reservation.userId;
+    const isAdminOrStaff = ['ADMIN', 'AGENT', 'CONTROLLER'].includes(req.user!.role);
+    if (!isOwner && !isAdminOrStaff) {
+      return res.status(403).json({ success: false, error: 'Accès non autorisé' });
+    }
+
     res.json({ success: true, ticket });
   } catch (error) {
     next(error);
