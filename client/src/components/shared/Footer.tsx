@@ -21,7 +21,7 @@ export const Footer: React.FC = () => {
           <h3 className="footer-title">Suivez-nous</h3>
           <ul className="footer-links">
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <a href="https://www.instagram.com/baoltransservices?igsh=MXZ4M2dhazgycml2OQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Instagram size={18} /> Instagram
               </a>
             </li>
