@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createReservation, initiatePayment, payReservation, getMyReservations, getAllReservations, getTicketByCode, updateReservationStatus, markTicketAsUsed, uploadProof } from '../controllers/reservationController';
+import { createReservation, initiatePayment, payReservation, getMyReservations, getAllReservations, getTicketByCode, updateReservationStatus, markTicketAsUsed, uploadProof, deleteReservation } from '../controllers/reservationController';
 import { authenticateToken, requireRole } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -16,5 +16,6 @@ router.post('/initiate-payment', initiatePayment);
 router.post('/pay', payReservation);
 router.patch('/:id/status', requireRole(['ADMIN', 'AGENT']), updateReservationStatus);
 router.patch('/:id/proof', uploadProof);
+router.delete('/:id', requireRole(['ADMIN']), deleteReservation);
 
 export default router;

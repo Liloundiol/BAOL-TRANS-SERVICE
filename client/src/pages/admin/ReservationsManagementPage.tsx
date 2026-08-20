@@ -52,6 +52,21 @@ const ReservationsManagementPage: React.FC = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Voulez-vous vraiment SUPPRIMER DÉFINITIVEMENT cette réservation de la base de données ? Cette action est irréversible.')) {
+      return;
+    }
+    try {
+      await apiFetch(`/reservations/${id}`, {
+        method: 'DELETE'
+      });
+      setReservations(prev => prev.filter(r => r.id !== id));
+      alert('Réservation supprimée avec succès.');
+    } catch (error: any) {
+      alert(error.message || 'Erreur lors de la suppression');
+    }
+  };
+
   const columns: Column<Reservation>[] = [
     { 
       header: 'Client', 
@@ -108,6 +123,14 @@ const ReservationsManagementPage: React.FC = () => {
               Annuler
             </button>
           )}
+          <button 
+            className="bts-button" 
+            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', minHeight: 'auto', borderRadius: '4px', backgroundColor: '#EF4444', color: 'white', border: 'none' }}
+            onClick={() => handleDelete(row.id)}
+            title="Supprimer définitivement"
+          >
+            Supprimer
+          </button>
         </div>
       ) 
     },

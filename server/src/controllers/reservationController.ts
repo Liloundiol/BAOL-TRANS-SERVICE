@@ -524,3 +524,42 @@ export const uploadProof = async (req: AuthRequest, res: Response, next: NextFun
     next(error);
   }
 };
+
+export const deleteReservation = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    
+    if (req.user!.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, error: 'Accès non autorisé' });
+    }
+
+    const reservation = await prisma.reservation.findUnique({
+      where: { id }
+    });
+
+    if (!reservation) {
+      return res.status(404).json({ success: false, error: 'Réservation non trouvée' });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Delete associated ticket if it exists
+      await tx.ticket.deleteMany({
+        where: { reservationId: id }
+      });
+
+      // Delete associated payment if it exists
+      await tx.payment.deleteMany({
+        where: { reservationId: id }
+      });
+
+      // Delete the reservation itself
+      await tx.reservation.delete({
+        where: { id }
+      });
+    });
+
+    res.json({ success: true, message: 'Réservation supprimée définitivement' });
+  } catch (error) {
+    next(error);
+  }
+};
