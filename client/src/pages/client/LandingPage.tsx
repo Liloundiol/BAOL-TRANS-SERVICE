@@ -165,23 +165,37 @@ const LandingPage: React.FC = () => {
       <div className="pro-extended-content">
         {/* Pourquoi choisir BTS */}
         <section className="pro-features">
-          <h2 className="section-title text-center" style={{ textAlign: 'center', marginBottom: '2rem' }}>Pourquoi choisir Baol Trans Services ?</h2>
+          <h2 className="section-title text-center" style={{ textAlign: 'center', marginBottom: '2rem' }}>Pourquoi choisir BAOL TRANS SERVICES ?</h2>
           <div className="features-grid">
             <div className="feature-card">
-              <div className="feature-icon"><ShieldCheck size={32} /></div>
-              <h3>Confort & Sécurité</h3>
-              <p>Voyagez en toute sécurité dans nos véhicules modernes, contrôlés avant chaque départ pour vous garantir un confort optimal.</p>
+              <div className="feature-icon" style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🛡️</div>
+              <h3>Sécurité & confort</h3>
+              <p>Nous accordons une attention particulière à la sécurité et au confort de nos voyageurs, avec une organisation adaptée à chaque trajet et au nombre de participants.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon"><Clock size={32} /></div>
-              <h3>Gagnez du temps</h3>
-              <p>Réservez votre billet en quelques clics et payez facilement via Wave, sans vous déplacer.</p>
+              <div className="feature-icon" style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏰</div>
+              <h3>Une organisation pensée pour vous</h3>
+              <p>De la réservation au départ, notre équipe vous accompagne et vous communique les informations essentielles pour faciliter votre voyage.</p>
             </div>
             <div className="feature-card">
-              <div className="feature-icon"><ThumbsUp size={32} /></div>
-              <h3>Service Fiable</h3>
-              <p>Des départs à l'heure, un personnel accueillant et un suivi en temps réel de vos réservations.</p>
+              <div className="feature-icon" style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>💚</div>
+              <h3>Votre avis compte</h3>
+              <p>Chez BTS, vous n'êtes pas un simple passager. Vos avis, vos remarques et vos suggestions nous permettent d'améliorer continuellement nos services.</p>
             </div>
+            <div className="feature-card">
+              <div className="feature-icon" style={{ fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🤝</div>
+              <h3>Un service proche des voyageurs</h3>
+              <p>Notre équipe reste disponible pour répondre à vos questions, vous accompagner dans vos réservations et vous informer avant chaque départ.</p>
+            </div>
+          </div>
+          
+          <div className="features-conclusion" style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-primary)', marginBottom: '1rem' }}>
+              Chez BTS, vous n'êtes pas simplement transporté. Vous êtes accompagné.
+            </p>
+            <p style={{ color: 'var(--text-secondary)', fontWeight: '600', fontSize: '0.9rem' }}>
+              Respect • Sécurité • Ponctualité • Confort
+            </p>
           </div>
         </section>
 
