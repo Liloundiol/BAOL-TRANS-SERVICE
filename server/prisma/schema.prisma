@@ -51,6 +51,8 @@ model Bus {
   status       BusStatus     @default(AVAILABLE)
   trip         Trip          @relation(fields: [tripId], references: [id])
   reservations Reservation[]
+
+  @@index([tripId])
 }
 
 model BoardingPoint {
@@ -59,6 +61,8 @@ model BoardingPoint {
   name   String
   time   String
   trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
 }
 
 model DropoffPoint {
@@ -67,6 +71,8 @@ model DropoffPoint {
   name   String
   time   String
   trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
 }
 
 model Reservation {
