@@ -73,59 +73,72 @@ const TicketPage: React.FC = () => {
 
       <div className="ticket-card">
         <div className="ticket-top">
-          <img src="/logo.png" alt="BTS" className="brand" style={{ height: '30px' }} />
+          <img src="/logo.png" alt="BTS" className="brand" style={{ height: '24px' }} />
           <div className="ticket-status badge-success badge">VALIDE</div>
         </div>
         
         <div className="ticket-body">
+          <div className="ticket-header-info">
+            <div className="passenger-info">
+              <span className="label-small">PASSAGER</span>
+              <h4>{ticketData.passenger}</h4>
+            </div>
+            <div className="seat-info">
+              <span className="label-small">SIÈGE</span>
+              <h2 className="seat-number">{ticketData.seatNumber || '--'}</h2>
+            </div>
+          </div>
+
           <div className="ticket-route-clean">
             <div className="route-point">
-              <span className="label-small">De (Montée)</span>
+              <span className="label-small">DÉPART</span>
               <h3>{ticketData.boardingPoint}</h3>
               {ticketData.boardingTime && (
-                <span className="boarding-time" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 'bold' }}>
-                  Heure de passage : {ticketData.boardingTime}
+                <span className="boarding-time">
+                  {ticketData.boardingTime}
                 </span>
               )}
             </div>
             <div className="route-divider">
               <div className="line"></div>
-              <div className="icon">→</div>
+              <div className="icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--color-primary)' }}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+              </div>
               <div className="line"></div>
             </div>
             <div className="route-point right">
-              <span className="label-small">À (Descente)</span>
+              <span className="label-small">ARRIVÉE</span>
               <h3>{ticketData.dropoffPoint}</h3>
             </div>
           </div>
 
           <div className="ticket-details-grid">
             <div className="detail-item">
-              <span>Passager</span>
-              <strong>{ticketData.passenger}</strong>
+              <span className="label-small">DATE</span>
+              <strong>{ticketData.date}</strong>
             </div>
             <div className="detail-item">
-              <span>Date de départ</span>
-              <strong>{ticketData.date} à {ticketData.time}</strong>
+              <span className="label-small">HEURE</span>
+              <strong>{ticketData.time}</strong>
             </div>
             <div className="detail-item">
-              <span>Siège</span>
-              <strong className="seat-number" style={{ color: 'var(--color-primary)', fontSize: '1.5rem' }}>
-                N° {ticketData.seatNumber || '--'}
-              </strong>
+              <span className="label-small">PRIX PAYÉ</span>
+              <strong>{ticketData.price}</strong>
             </div>
             <div className="detail-item">
-              <span>Prix Payé</span>
-              <strong style={{ fontSize: '1.2rem' }}>{ticketData.price}</strong>
+              <span className="label-small">BUS N°</span>
+              <strong>{ticketData.reservation?.bus?.busNumber || '--'}</strong>
             </div>
           </div>
         </div>
 
+        <div className="ticket-divider"></div>
+
         <div className="ticket-qr-section">
           <div className="qr-container">
-            <QRCodeSVG value={`${window.location.origin}/admin/verify/${ticketData.id}`} size={150} />
+            <QRCodeSVG value={`${window.location.origin}/admin/verify/${ticketData.ticketCode}`} size={140} level="H" includeMargin={true} />
           </div>
-          <p className="ticket-id">{ticketData.id}</p>
+          <p className="ticket-id">BILLET N° {ticketData.ticketCode}</p>
         </div>
       </div>
 

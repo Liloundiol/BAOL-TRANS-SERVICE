@@ -36,6 +36,7 @@ model Trip {
   price          Decimal
   status         TripStatus      @default(ACTIVE)
   boardingPoints BoardingPoint[]
+  dropoffPoints  DropoffPoint[]
   buses          Bus[]
   packages       Package[]
 
@@ -53,6 +54,14 @@ model Bus {
 }
 
 model BoardingPoint {
+  id     String @id @default(uuid())
+  tripId String
+  name   String
+  time   String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+}
+
+model DropoffPoint {
   id     String @id @default(uuid())
   tripId String
   name   String

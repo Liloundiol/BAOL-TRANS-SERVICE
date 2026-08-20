@@ -40,13 +40,14 @@ const DetailsSelection: React.FC<{ onNext: (boarding: string, dropoff: string) =
             value={dropoffPoint}
             onChange={(e) => setDropoffPoint(e.target.value)}
             placeholder="Sélectionnez un point de descente"
-            options={[
-              { value: 'Kébémer', label: 'Kébémer' },
-              { value: 'Tivaouane', label: 'Tivaouane' },
-              { value: 'Thiès', label: 'Thiès' },
-              { value: 'Dakar - Patte d\'oie', label: 'Dakar - Patte d\'oie' },
-              { value: 'Dakar - Colobane', label: 'Dakar - Colobane' },
-            ]}
+            options={
+              trip?.dropoffPoints && trip.dropoffPoints.length > 0
+                ? trip.dropoffPoints.map((dp: any) => ({
+                    value: dp.name,
+                    label: `${dp.name} - ${dp.time}`
+                  }))
+                : [{ value: 'Non défini', label: 'Aucun point défini', disabled: true }]
+            }
           />
         </div>
       </div>

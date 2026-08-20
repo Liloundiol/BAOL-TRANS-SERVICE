@@ -33,6 +33,7 @@ const TripsManagementPage: React.FC = () => {
   const [price, setPrice] = useState('');
   const [capacity, setCapacity] = useState('13'); // Default to 13
   const [boardingPoints, setBoardingPoints] = useState([{ name: '', time: '' }]);
+  const [dropoffPoints, setDropoffPoints] = useState([{ name: '', time: '' }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -65,7 +66,8 @@ const TripsManagementPage: React.FC = () => {
           method: 'POST',
           body: JSON.stringify({
             departure, destination, date, time, price, capacity: Number(capacity),
-            boardingPoints: boardingPoints.filter(bp => bp.name && bp.time)
+            boardingPoints: boardingPoints.filter(bp => bp.name && bp.time),
+            dropoffPoints: dropoffPoints.filter(dp => dp.name && dp.time)
           })
         });
       }
@@ -109,6 +111,7 @@ const TripsManagementPage: React.FC = () => {
     setPrice(String(trip.price));
     setCapacity('13'); // Editing capacity might not be fully supported by backend easily without updating all buses, so we leave it default
     setBoardingPoints([{ name: '', time: '' }]); // Simplified for edit
+    setDropoffPoints([{ name: '', time: '' }]); // Simplified for edit
     setIsModalOpen(true);
   };
 
@@ -121,6 +124,7 @@ const TripsManagementPage: React.FC = () => {
     setPrice('');
     setCapacity('13');
     setBoardingPoints([{ name: '', time: '' }]);
+    setDropoffPoints([{ name: '', time: '' }]);
     setFormError('');
   };
 
@@ -138,6 +142,22 @@ const TripsManagementPage: React.FC = () => {
     const newPoints = [...boardingPoints];
     newPoints[index][field] = value;
     setBoardingPoints(newPoints);
+  };
+
+  const addDropoffPoint = () => {
+    setDropoffPoints([...dropoffPoints, { name: '', time: '' }]);
+  };
+
+  const removeDropoffPoint = (index: number) => {
+    const newPoints = [...dropoffPoints];
+    newPoints.splice(index, 1);
+    setDropoffPoints(newPoints);
+  };
+
+  const updateDropoffPoint = (index: number, field: 'name' | 'time', value: string) => {
+    const newPoints = [...dropoffPoints];
+    newPoints[index][field] = value;
+    setDropoffPoints(newPoints);
   };
 
   const filteredTrips = (trips || []).filter(trip => {
@@ -366,7 +386,41 @@ const TripsManagementPage: React.FC = () => {
               </div>
             ))}
             <Button variant="outline" type="button" onClick={addBoardingPoint} style={{ width: '100%', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-              <Plus size={16} style={{ marginRight: '4px' }} /> Ajouter un point
+              <Plus size={16} style={{ marginRight: '4px' }} /> Ajouter un point de montée
+            </Button>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Points de descente</label>
+            {dropoffPoints.map((dp, index) => (
+              <div key={index} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', alignItems: 'center' }}>
+                <div style={{ flex: 2 }}>
+                  <Input 
+                    id={`dp-name-${index}`}
+                    label=""
+                    value={dp.name}
+                    onChange={(e) => updateDropoffPoint(index, 'name', e.target.value)}
+                    placeholder="Nom du point (ex: Arrêt Kébémer)"
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <Input 
+                    id={`dp-time-${index}`}
+                    label=""
+                    type="time"
+                    value={dp.time}
+                    onChange={(e) => updateDropoffPoint(index, 'time', e.target.value)}
+                  />
+                </div>
+                {dropoffPoints.length > 1 && (
+                  <button type="button" onClick={() => removeDropoffPoint(index)} style={{ padding: '0.7rem', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+            ))}
+            <Button variant="outline" type="button" onClick={addDropoffPoint} style={{ width: '100%', fontSize: '0.9rem', marginTop: '0.5rem' }}>
+              <Plus size={16} style={{ marginRight: '4px' }} /> Ajouter un point de descente
             </Button>
           </div>
 

@@ -31,6 +31,7 @@ const getTrips = async (req, res, next) => {
                 take: pageSize,
                 include: {
                     boardingPoints: true,
+                    dropoffPoints: true,
                     buses: {
                         include: {
                             reservations: {
@@ -64,7 +65,8 @@ const getTrips = async (req, res, next) => {
                 price: trip.price,
                 availableSeats: totalCapacity - totalOccupied,
                 status: trip.status,
-                boardingPoints: trip.boardingPoints
+                boardingPoints: trip.boardingPoints,
+                dropoffPoints: trip.dropoffPoints
             };
         });
         res.json({
@@ -88,7 +90,7 @@ const createTrip = async (req, res, next) => {
         if (!req.user || req.user.role !== 'ADMIN') {
             return res.status(403).json({ success: false, error: 'Accès non autorisé' });
         }
-        const { departure, destination, date, time, price, capacity, boardingPoints } = req.body;
+        const { departure, destination, date, time, price, capacity, boardingPoints, dropoffPoints } = req.body;
         if (!departure || !destination || !date || !time || !price) {
             return res.status(400).json({ success: false, error: 'Tous les champs sont requis' });
         }
@@ -109,9 +111,15 @@ const createTrip = async (req, res, next) => {
                     time: tripTime,
                     price: parseFloat(price),
                     boardingPoints: boardingPoints && Array.isArray(boardingPoints) ? {
-                        create: boardingPoints.map(bp => ({
+                        create: boardingPoints.map((bp) => ({
                             name: bp.name,
                             time: bp.time
+                        }))
+                    } : undefined,
+                    dropoffPoints: dropoffPoints && Array.isArray(dropoffPoints) ? {
+                        create: dropoffPoints.map((dp) => ({
+                            name: dp.name,
+                            time: dp.time
                         }))
                     } : undefined
                 }
@@ -146,6 +154,7 @@ const getTripById = async (req, res, next) => {
             where: { id },
             include: {
                 boardingPoints: true,
+                dropoffPoints: true,
                 buses: {
                     include: {
                         reservations: {
@@ -181,6 +190,7 @@ const getTripById = async (req, res, next) => {
                 availableSeats: totalCapacity - totalOccupied,
                 status: trip.status,
                 boardingPoints: trip.boardingPoints,
+                dropoffPoints: trip.dropoffPoints,
                 activeBusId: activeBus?.id,
                 capacity: activeBus?.capacity || 13,
                 occupiedSeats

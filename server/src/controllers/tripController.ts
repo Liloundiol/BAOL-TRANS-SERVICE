@@ -33,6 +33,7 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
         take: pageSize,
         include: {
           boardingPoints: true,
+          dropoffPoints: true,
           buses: {
             include: {
               reservations: {
@@ -69,7 +70,8 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
         price: trip.price,
         availableSeats: totalCapacity - totalOccupied,
         status: trip.status,
-        boardingPoints: trip.boardingPoints
+        boardingPoints: trip.boardingPoints,
+        dropoffPoints: trip.dropoffPoints
       };
     });
 
@@ -94,7 +96,7 @@ export const createTrip = async (req: Request, res: Response, next: NextFunction
       return res.status(403).json({ success: false, error: 'Accès non autorisé' });
     }
 
-    const { departure, destination, date, time, price, capacity, boardingPoints } = req.body;
+    const { departure, destination, date, time, price, capacity, boardingPoints, dropoffPoints } = req.body;
 
     if (!departure || !destination || !date || !time || !price) {
       return res.status(400).json({ success: false, error: 'Tous les champs sont requis' });
@@ -119,9 +121,15 @@ export const createTrip = async (req: Request, res: Response, next: NextFunction
           time: tripTime,
           price: parseFloat(price),
           boardingPoints: boardingPoints && Array.isArray(boardingPoints) ? {
-            create: boardingPoints.map(bp => ({
+            create: boardingPoints.map((bp: any) => ({
               name: bp.name,
               time: bp.time
+            }))
+          } : undefined,
+          dropoffPoints: dropoffPoints && Array.isArray(dropoffPoints) ? {
+            create: dropoffPoints.map((dp: any) => ({
+              name: dp.name,
+              time: dp.time
             }))
           } : undefined
         }
@@ -160,6 +168,7 @@ export const getTripById = async (req: Request, res: Response, next: NextFunctio
       where: { id },
       include: {
         boardingPoints: true,
+        dropoffPoints: true,
         buses: {
           include: {
             reservations: {
@@ -201,6 +210,7 @@ export const getTripById = async (req: Request, res: Response, next: NextFunctio
         availableSeats: totalCapacity - totalOccupied,
         status: trip.status,
         boardingPoints: trip.boardingPoints,
+        dropoffPoints: trip.dropoffPoints,
         activeBusId: activeBus?.id,
         capacity: activeBus?.capacity || 13,
         occupiedSeats
