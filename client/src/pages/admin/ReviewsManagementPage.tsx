@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, Star, MessageSquare } from 'lucide-react';
 import { apiFetch } from '../../services/api';
 import { DataTable } from '../../components/admin/DataTable';
 import type { Column } from '../../components/admin/DataTable';
+import './ReviewsManagementPage.css';
 
 interface Review {
   id: string;
@@ -102,9 +103,9 @@ const ReviewsManagementPage: React.FC = () => {
       header: 'Statut', 
       accessor: (row) => (
         row.isPublished ? (
-          <span className="status-badge status-success">Publié</span>
+          <span className="badge badge-success">Publié</span>
         ) : (
-          <span className="status-badge status-warning">En attente</span>
+          <span className="badge badge-warning">En attente</span>
         )
       ) 
     }
@@ -121,7 +122,7 @@ const ReviewsManagementPage: React.FC = () => {
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      <div className="card">
+      <div className="reviews-desktop-view card">
         <DataTable 
           columns={columns} 
           data={reviews} 
@@ -151,8 +152,63 @@ const ReviewsManagementPage: React.FC = () => {
           )}
         />
       </div>
+
+      <div className="reviews-mobile-view">
+        {reviews.length === 0 ? (
+          <div className="datatable-empty">
+            <p>Aucun avis à modérer.</p>
+          </div>
+        ) : (
+          reviews.map((row) => (
+            <div key={row.id} className="review-mobile-card">
+              <div className="review-mobile-header">
+                <div>
+                  <div className="review-mobile-user">{row.user?.firstName || ''} {row.user?.lastName || ''}</div>
+                  <div className="review-mobile-date">{new Date(row.createdAt).toLocaleDateString('fr-FR')}</div>
+                </div>
+                <div>
+                  {row.isPublished ? (
+                    <span className="badge badge-success">Publié</span>
+                  ) : (
+                    <span className="badge badge-warning">En attente</span>
+                  )}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '0.2rem', color: '#F4C430' }}>
+                {[1, 2, 3, 4, 5].map(star => (
+                  <Star key={star} size={16} fill={star <= row.rating ? "#F4C430" : "none"} color={star <= row.rating ? "#F4C430" : "#e5e7eb"} />
+                ))}
+              </div>
+              
+              <div className="review-mobile-comment">
+                <MessageSquare size={16} style={{ color: '#94A3B8', marginBottom: '0.5rem' }} />
+                <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{row.comment}</div>
+              </div>
+              
+              <div className="review-mobile-actions">
+                {!row.isPublished && (
+                  <button 
+                    className="review-mobile-btn review-btn-publish"
+                    onClick={() => handlePublish(row.id)}
+                  >
+                    <CheckCircle size={18} /> Publier
+                  </button>
+                )}
+                <button 
+                  className="review-mobile-btn review-btn-delete"
+                  onClick={() => handleDelete(row.id)}
+                >
+                  <XCircle size={18} /> Supprimer
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };
 
 export default ReviewsManagementPage;
+
