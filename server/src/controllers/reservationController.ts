@@ -380,7 +380,7 @@ export const updateReservationStatus = async (req: AuthRequest, res: Response, n
 
     const existingReservation = await prisma.reservation.findUnique({
       where: { id },
-      include: { ticket: true }
+      include: { ticket: true, bus: { include: { trip: true } } }
     });
 
     if (!existingReservation) {
@@ -405,7 +405,7 @@ export const updateReservationStatus = async (req: AuthRequest, res: Response, n
           data: {
             reservationId: id,
             waveTransactionId: 'CASH-ADMIN-' + Math.floor(Math.random() * 1000000),
-            amount: 0, // Ideally we fetch the trip price here, but skipping for simplicity
+            amount: existingReservation.bus.trip.price,
             status: 'COMPLETED'
           }
         });
