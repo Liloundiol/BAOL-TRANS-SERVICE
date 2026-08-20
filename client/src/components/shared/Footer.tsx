@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle, Instagram } from 'lucide-react';
 import './Footer.css';
 
 export const Footer: React.FC = () => {
@@ -18,11 +18,18 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="footer-section links-section">
-          <h3 className="footer-title">Liens rapides</h3>
+          <h3 className="footer-title">Suivez-nous</h3>
           <ul className="footer-links">
-            <li><Link to="/search">Rechercher un trajet</Link></li>
-            <li><Link to="/dashboard">Mes billets</Link></li>
-            <li><Link to="/profile">Mon profil</Link></li>
+            <li>
+              <a href="#" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Instagram size={18} /> Instagram
+              </a>
+            </li>
+            <li>
+              <a href="#" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageCircle size={18} /> Canal WhatsApp
+              </a>
+            </li>
           </ul>
         </div>
 
