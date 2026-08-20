@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
           <img src="/logo.png" alt="BTS" className="footer-brand" style={{ height: '50px', marginBottom: '1rem' }} />
           <p className="footer-slogan">Votre partenaire de confiance pour des voyages confortables et sécurisés.</p>
           <div className="social-links">
-            <a href="#" className="social-icon" aria-label="WhatsApp"><MessageCircle size={20} /></a>
+            <a href="https://wa.me/221773402425" target="_blank" rel="noreferrer" className="social-icon" aria-label="WhatsApp"><MessageCircle size={20} /></a>
           </div>
         </div>
 
