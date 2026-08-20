@@ -67,7 +67,7 @@ const ClientLayout: React.FC = () => {
 
       {/* Floating WhatsApp Button */}
       <a 
-        href="https://wa.me/221772698246" 
+        href="https://wa.me/221773402425" 
         target="_blank" 
         rel="noreferrer" 
         className="floating-whatsapp-btn"
