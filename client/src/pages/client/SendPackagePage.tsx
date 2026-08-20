@@ -69,13 +69,7 @@ const SendPackagePage: React.FC = () => {
 
       if (response.success) {
         // Rediriger vers la page de paiement ou de succès
-        navigate('/payment-mock', { 
-          state: { 
-            amount: calculatePrice(),
-            packageId: response.package.id,
-            type: 'PACKAGE'
-          } 
-        });
+        navigate(`/payment-mock?pkg=${response.package.id}&amt=${calculatePrice()}`);
       }
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la création du colis.');

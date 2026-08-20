@@ -19,9 +19,12 @@ interface PackageType {
   };
 }
 
+import { useNavigate } from 'react-router-dom';
+
 const MyPackagesPage: React.FC = () => {
   const [packages, setPackages] = useState<PackageType[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -57,7 +60,7 @@ const MyPackagesPage: React.FC = () => {
           <h2>Mes Colis Envoyés</h2>
         </div>
         <button 
-          onClick={() => window.location.href = '/send-package'} 
+          onClick={() => navigate('/send-package')} 
           style={{ background: 'var(--color-primary)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
         >
           Envoyer un colis

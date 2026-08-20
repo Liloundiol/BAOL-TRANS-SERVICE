@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 const PaymentMockPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const reservationId = searchParams.get('res');
+  const packageId = searchParams.get('pkg');
   const amount = searchParams.get('amt');
   
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +15,10 @@ const PaymentMockPage: React.FC = () => {
     setTimeout(() => {
       // Redirection vers le success url
       const sessionId = `SIM-WAVE-${Date.now()}`;
-      window.location.href = `/payment-success?session_id=${sessionId}&reservation_id=${reservationId}&amount=${amount}`;
+      let redirectUrl = `/payment-success?session_id=${sessionId}&amount=${amount}`;
+      if (reservationId) redirectUrl += `&reservation_id=${reservationId}`;
+      if (packageId) redirectUrl += `&package_id=${packageId}`;
+      window.location.href = redirectUrl;
     }, 1500);
   };
 

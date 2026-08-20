@@ -7,6 +7,7 @@ const PaymentSuccessPage: React.FC = () => {
   const navigate = useNavigate();
   const sessionId = searchParams.get('session_id');
   const reservationId = searchParams.get('reservation_id'); // Passed by our mock
+  const packageId = searchParams.get('package_id'); // Passed by our mock
   const amount = searchParams.get('amount'); // Passed by our mock
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
@@ -27,28 +28,48 @@ const PaymentSuccessPage: React.FC = () => {
       hasProcessed.current = true;
       
       try {
-        // En vrai production, l'ID de réservation est stocké côté serveur ou récupéré via webhook
-        // Ici on envoie au serveur le sessionId pour qu'il le valide.
-        // Puisque nous passons reservationId dans l'URL mockée pour des raisons pratiques:
-        const payload = {
-          waveTransactionId: sessionId,
-          reservationId: reservationId || '', // In a perfect flow, the server maps sessionId -> reservationId
-          amount: amount ? Number(amount) : 0
-        };
+        if (packageId) {
+          const payload = {
+            waveTransactionId: sessionId,
+            packageId: packageId,
+            amount: amount ? Number(amount) : 0
+          };
 
-        const data = await apiFetch('/reservations/pay', {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+          const data = await apiFetch('/packages/pay', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
 
-        if (data.success && data.ticket) {
-          setStatus('success');
-          // Wait 2 seconds so user sees the success message, then redirect to ticket
-          setTimeout(() => {
-            navigate(`/ticket/${data.ticket.ticketCode}`);
-          }, 2000);
+          if (data.success && data.package) {
+            setStatus('success');
+            // Wait 2 seconds so user sees the success message, then redirect to their packages list
+            setTimeout(() => {
+              navigate('/mes-colis');
+            }, 2000);
+          } else {
+            throw new Error('La validation du colis a échoué');
+          }
         } else {
-          throw new Error('La validation du ticket a échoué');
+          const payload = {
+            waveTransactionId: sessionId,
+            reservationId: reservationId || '',
+            amount: amount ? Number(amount) : 0
+          };
+
+          const data = await apiFetch('/reservations/pay', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+
+          if (data.success && data.ticket) {
+            setStatus('success');
+            // Wait 2 seconds so user sees the success message, then redirect to ticket
+            setTimeout(() => {
+              navigate(`/ticket/${data.ticket.ticketCode}`);
+            }, 2000);
+          } else {
+            throw new Error('La validation du ticket a échoué');
+          }
         }
       } catch (err: any) {
         console.error('Payment confirmation error:', err);

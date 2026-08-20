@@ -22,24 +22,18 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = localStorage.getItem('bts_user');
+    if (storedUser) {
+      try { return JSON.parse(storedUser); } catch(e) { return null; }
+    }
+    return null;
+  });
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem('bts_token') || null;
+  });
 
   useEffect(() => {
-    // Check local storage for existing session
-    const storedToken = localStorage.getItem('bts_token');
-    const storedUser = localStorage.getItem('bts_user');
-
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse user from local storage');
-        logout();
-      }
-    }
-
     const handleAuthError = () => {
       logout();
     };

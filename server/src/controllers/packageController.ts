@@ -94,3 +94,49 @@ export const deletePackage = async (req: AuthRequest, res: Response, next: NextF
     next(error);
   }
 };
+
+// Pay for a package
+export const payPackage = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { packageId, waveTransactionId, amount } = req.body;
+
+    if (!packageId || !waveTransactionId) {
+      res.status(400).json({ success: false, message: 'ID colis et transaction Wave requis' });
+      return;
+    }
+
+    const pkg = await prisma.package.findUnique({
+      where: { id: packageId },
+      include: { payment: true }
+    });
+
+    if (!pkg) {
+      res.status(404).json({ success: false, message: 'Colis introuvable' });
+      return;
+    }
+
+    if (pkg.payment && pkg.payment.status === 'COMPLETED') {
+      res.status(400).json({ success: false, message: 'Ce colis est déjà payé' });
+      return;
+    }
+
+    if (pkg.status === 'DELIVERED' || pkg.status === 'CANCELLED') {
+      res.status(400).json({ success: false, message: 'Ce colis est livré ou annulé' });
+      return;
+    }
+
+    // Créer le paiement
+    const payment = await prisma.payment.create({
+      data: {
+        packageId,
+        waveTransactionId,
+        amount: amount || pkg.price,
+        status: 'COMPLETED'
+      }
+    });
+
+    res.json({ success: true, package: pkg, payment });
+  } catch (error) {
+    next(error);
+  }
+};
