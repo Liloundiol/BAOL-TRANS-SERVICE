@@ -119,3 +119,9 @@
   color: #64748B;
   font-size: 0.85rem;
 }
+
+@media print {
+  .bts-footer {
+    display: none !important;
+  }
+}
