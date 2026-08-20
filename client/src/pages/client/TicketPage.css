@@ -59,39 +59,50 @@
 }
 
 .ticket-body {
-  padding: 1.5rem;
-  border-bottom: 2px dashed var(--color-gray-border);
+  padding: 2rem 1.5rem 1.5rem;
   position: relative;
+  background-color: var(--color-white);
 }
 
-/* Creating the ticket cutout effect */
-.ticket-body::before, .ticket-body::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  width: 20px;
-  height: 20px;
-  background-color: var(--color-gray-light);
-  border-radius: 50%;
+.ticket-header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
 }
 
-.ticket-body::before { left: -10px; }
-.ticket-body::after { right: -10px; }
+.passenger-info h4 {
+  font-size: 1.25rem;
+  color: var(--color-text);
+  margin-top: 0.25rem;
+  font-weight: 800;
+}
+
+.seat-info {
+  text-align: right;
+}
+
+.seat-number {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-top: 0.25rem;
+  font-weight: 900;
+  line-height: 1;
+}
 
 .ticket-route-clean {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
-  background-color: var(--color-gray-light);
-  padding: 1rem;
-  border-radius: 8px;
+  margin-bottom: 2.5rem;
+  padding: 1rem 0;
 }
 
 .route-point {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1;
 }
 
 .route-point.right {
@@ -100,41 +111,48 @@
 }
 
 .label-small {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--color-gray-disabled);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .route-point h3 {
   color: var(--color-text);
-  font-size: 1.1rem;
+  font-size: 1.35rem;
+  font-weight: 800;
   margin: 0;
+}
+
+.boarding-time {
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  margin-top: 0.25rem;
 }
 
 .route-divider {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 1;
-  margin: 0 1rem;
+  padding: 0 1rem;
 }
 
 .route-divider .line {
   height: 2px;
-  background-color: var(--color-gray-border);
-  flex: 1;
-}
-
-.route-divider .icon {
-  color: var(--color-primary);
-  font-weight: bold;
+  width: 24px;
+  background-color: var(--color-primary);
+  opacity: 0.3;
 }
 
 .ticket-details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+  background-color: var(--color-gray-light);
+  padding: 1.5rem;
+  border-radius: 12px;
 }
 
 .detail-item {
@@ -143,30 +161,32 @@
   gap: 0.25rem;
 }
 
-.detail-item.full-width {
-  grid-column: 1 / -1;
-  text-align: center;
-  background-color: rgba(11, 110, 46, 0.05);
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px dashed var(--color-primary);
-}
-
-.detail-item span {
-  font-size: 0.75rem;
-  color: var(--color-gray-disabled);
-  text-transform: uppercase;
-}
-
 .detail-item strong {
   color: var(--color-text);
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
-.seat-number {
-  font-size: 1.5rem !important;
-  color: var(--color-primary) !important;
+.ticket-divider {
+  height: 0;
+  border-top: 2px dashed #CBD5E1;
+  position: relative;
+  margin: 0 1.5rem;
 }
+
+.ticket-divider::before, .ticket-divider::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  background-color: #F8FAFC;
+  border-radius: 50%;
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.05);
+}
+
+.ticket-divider::before { left: -25px; }
+.ticket-divider::after { right: -25px; }
 
 .ticket-qr-section {
   padding: 2rem 1.5rem;
