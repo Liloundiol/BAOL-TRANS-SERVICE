@@ -18,6 +18,7 @@ const SendPackagePage: React.FC = () => {
   const [weight, setWeight] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [step, setStep] = useState(1);
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -68,8 +69,11 @@ const SendPackagePage: React.FC = () => {
       });
 
       if (response.success) {
-        // Rediriger vers la page de paiement ou de succès
-        navigate(`/payment-mock?pkg=${response.package.id}&amt=${calculatePrice()}`);
+        // Open Wave link like reservations
+        if (import.meta.env.VITE_WAVE_MERCHANT_LINK) {
+          window.open(import.meta.env.VITE_WAVE_MERCHANT_LINK, '_blank');
+        }
+        setStep(2); // Go to success step
       }
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la création du colis.');
@@ -77,6 +81,30 @@ const SendPackagePage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (step === 2) {
+    return (
+      <div className="send-package-page">
+        <div className="package-hero">
+          <Package size={48} className="package-hero-icon" />
+          <h1>Colis en attente !</h1>
+        </div>
+        <div className="package-form-container" style={{ textAlign: 'center', padding: '2rem' }}>
+          <h2 style={{ color: '#0B6E2E', marginBottom: '1rem' }}>Votre demande a bien été enregistrée.</h2>
+          <p style={{ marginBottom: '1rem', color: '#374151' }}>
+            Payez <strong>{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(calculatePrice())}</strong> sur Wave au numéro : <br/>
+            <strong style={{color: '#111827', fontSize: '1.2em'}}>{import.meta.env.VITE_WAVE_MERCHANT_PHONE || '77 340 24 25'}</strong>
+          </p>
+          <p style={{ marginBottom: '2rem', color: '#6b7280' }}>
+            L'administrateur vérifiera votre paiement Wave et validera votre colis.
+          </p>
+          <Button variant="primary" onClick={() => navigate('/my-packages')} style={{ marginTop: '1rem' }}>
+            Voir mes colis
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="send-package-page">
