@@ -49,9 +49,9 @@ export const ComplaintsManagementPage: React.FC = () => {
     { 
       header: 'Statut', 
       accessor: (row) => {
-        if (row.status === 'RESOLVED') return <span className="badge badge-success">Résolu</span>;
-        if (row.status === 'IN_PROGRESS') return <span className="badge" style={{ backgroundColor: '#1E4ED8', color: 'white' }}>Prise en compte</span>;
-        return <span className="badge badge-warning">En attente</span>;
+        if (row.status === 'RESOLVED') return <span style={{ background: '#e6f4ea', color: '#137333', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>Résolu</span>;
+        if (row.status === 'IN_PROGRESS') return <span style={{ background: '#1a36b3', color: 'white', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, display: 'inline-block', lineHeight: '1.2' }}>Prise en<br/>compte</span>;
+        return <span style={{ background: '#fef1e6', color: '#d97706', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600 }}>En attente</span>;
       },
       sortAccessor: (row) => row.status
     },
