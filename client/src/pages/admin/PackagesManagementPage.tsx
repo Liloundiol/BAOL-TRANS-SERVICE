@@ -23,6 +23,14 @@ interface Trip {
   time: string;
 }
 
+interface Complaint {
+  id: string;
+  subject: string;
+  message: string;
+  status: string;
+  createdAt: string;
+}
+
 interface Package {
   id: string;
   senderId: string;
@@ -36,6 +44,7 @@ interface Package {
   createdAt: string;
   sender?: User;
   trip?: Trip;
+  complaints?: Complaint[];
 }
 
 const PackagesManagementPage: React.FC = () => {
@@ -191,7 +200,16 @@ const PackagesManagementPage: React.FC = () => {
     },
     {
       header: 'Description',
-      accessor: (pkg) => `${pkg.description} (${pkg.weight} kg)`
+      accessor: (pkg) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <span>{pkg.description} ({pkg.weight} kg)</span>
+          {pkg.complaints && pkg.complaints.some(c => c.status === 'PENDING') && (
+            <span style={{ color: '#B91C1C', fontSize: '0.8rem', fontWeight: 'bold' }}>
+              ⚠️ Réclamation
+            </span>
+          )}
+        </div>
+      )
     },
     {
       header: 'Trajet',

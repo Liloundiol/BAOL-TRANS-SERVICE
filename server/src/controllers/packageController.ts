@@ -11,7 +11,8 @@ export const getPackages = async (req: AuthRequest, res: Response, next: NextFun
       where: req.user?.role === 'STUDENT' ? { senderId: req.user.userId } : undefined,
       include: {
         sender: true,
-        trip: true
+        trip: true,
+        complaints: true
       },
       orderBy: { createdAt: 'desc' }
     });
