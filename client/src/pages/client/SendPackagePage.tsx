@@ -14,8 +14,8 @@ const SendPackagePage: React.FC = () => {
   const [selectedTripId, setSelectedTripId] = useState('');
   const [receiverName, setReceiverName] = useState('');
   const [receiverPhone, setReceiverPhone] = useState('');
+  const [packageType, setPackageType] = useState('');
   const [description, setDescription] = useState('');
-  const [weight, setWeight] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
@@ -41,15 +41,19 @@ const SendPackagePage: React.FC = () => {
   }, []);
 
   const calculatePrice = () => {
-    const w = parseFloat(weight);
-    if (isNaN(w) || w <= 0) return 0;
-    return Math.max(1000, w * 500);
+    if (packageType === 'VALISE_SAC') return 4000;
+    if (packageType === 'DOCUMENT') return 2500;
+    return 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTripId) {
       setError('Veuillez sélectionner un trajet.');
+      return;
+    }
+    if (!packageType) {
+      setError('Veuillez sélectionner un type de colis.');
       return;
     }
     
@@ -63,8 +67,9 @@ const SendPackagePage: React.FC = () => {
           tripId: selectedTripId,
           receiverName,
           receiverPhone,
-          description,
-          weight: parseFloat(weight),
+          description: packageType === 'VALISE_SAC' ? `Valise/Sac : ${description}` : `Document : ${description}`,
+          packageType, // Send package type to backend for price validation
+          weight: 0, // Keep weight to 0 to avoid breaking schema
         })
       });
 
@@ -115,6 +120,10 @@ const SendPackagePage: React.FC = () => {
       </div>
 
       <div className="package-form-container">
+        <div className="auth-alert" style={{backgroundColor: '#FEF2F2', color: '#B91C1C', border: '1px solid #F87171', marginBottom: '1.5rem'}}>
+          <strong>⚠️ Attention :</strong> Les objets sensibles (ordinateur, téléphone, etc.) ne sont pas acceptés.
+        </div>
+
         <form onSubmit={handleSubmit} className="package-form">
           {error && <div className="error-alert">{error}</div>}
           
@@ -172,31 +181,36 @@ const SendPackagePage: React.FC = () => {
 
           <div className="form-section">
             <h3>3. Détails du Colis</h3>
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Type de colis</label>
+              <select 
+                id="packageType"
+                value={packageType} 
+                onChange={e => setPackageType(e.target.value)} 
+                required
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem' }}
+              >
+                <option value="" disabled>Sélectionnez le type de colis</option>
+                <option value="VALISE_SAC">Valise / Sac (4000 FCFA)</option>
+                <option value="DOCUMENT">Document (2500 FCFA)</option>
+              </select>
+            </div>
+
             <Input 
-              label="Description du contenu" 
+              label="Description détaillée (Optionnel)" 
               id="description" 
               value={description} 
               onChange={e => setDescription(e.target.value)} 
-              required 
-              placeholder="Ex: Ordinateur portable, Valise de vêtements..."
-            />
-            <Input 
-              label="Poids estimé (en kg)" 
-              id="weight" 
-              type="number"
-              step="0.1"
-              value={weight} 
-              onChange={e => setWeight(e.target.value)} 
-              required 
-              placeholder="Ex: 2.5"
-              icon={<Weight size={18} />}
+              placeholder="Ex: Vêtements, papiers administratifs..."
             />
             
-            <div className="price-estimation">
-              <span className="price-label">Tarif estimé :</span>
-              <span className="price-value">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(calculatePrice())}</span>
-              <small>(500 FCFA/kg - Minimum 1000 FCFA)</small>
-            </div>
+            {packageType && (
+              <div className="price-estimation">
+                <span className="price-label">Tarif :</span>
+                <span className="price-value">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(calculatePrice())}</span>
+              </div>
+            )}
           </div>
 
           <Button type="submit" fullWidth isLoading={isSubmitting} className="submit-package-btn" disabled={!selectedTripId}>

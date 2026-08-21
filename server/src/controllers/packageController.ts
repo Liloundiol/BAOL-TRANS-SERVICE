@@ -25,16 +25,17 @@ export const getPackages = async (req: AuthRequest, res: Response, next: NextFun
 // Create a new package
 export const createPackage = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { senderId, tripId, receiverPhone, receiverName, description, weight, price } = req.body;
+    const { senderId, tripId, receiverPhone, receiverName, description, weight, price, packageType } = req.body;
 
     let finalSenderId = senderId || req.user?.userId;
     let finalPrice = price;
 
-    if (req.user?.role === 'STUDENT') {
-      // Prix calculé automatiquement pour les étudiants : 500 FCFA/kg (minimum 1000 FCFA)
-      finalPrice = Math.max(1000, weight * 500);
-    } else if (!finalPrice) {
-      // Fallback price for admins testing the client app
+    if (packageType === 'VALISE_SAC') {
+      finalPrice = 4000;
+    } else if (packageType === 'DOCUMENT') {
+      finalPrice = 2500;
+    } else if (req.user?.role === 'STUDENT' || !finalPrice) {
+      // Fallback if no packageType is provided
       finalPrice = Math.max(1000, weight * 500);
     }
 
