@@ -49,9 +49,9 @@ export const ComplaintsManagementPage: React.FC = () => {
     { 
       header: 'Statut', 
       accessor: (row) => {
-        return row.status === 'RESOLVED' 
-          ? <span className="badge badge-success">Résolu</span>
-          : <span className="badge badge-warning">En attente</span>;
+        if (row.status === 'RESOLVED') return <span className="badge badge-success">Résolu</span>;
+        if (row.status === 'IN_PROGRESS') return <span className="badge" style={{ backgroundColor: '#1E4ED8', color: 'white' }}>Prise en compte</span>;
+        return <span className="badge badge-warning">En attente</span>;
       },
       sortAccessor: (row) => row.status
     },
@@ -73,7 +73,27 @@ export const ComplaintsManagementPage: React.FC = () => {
           keyField="id" 
           actions={(row) => (
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {row.status !== 'RESOLVED' && (
+              {row.status === 'PENDING' && (
+                <>
+                  <button 
+                    className="icon-btn" 
+                    title="Prendre en compte" 
+                    style={{ color: '#1E4ED8' }} 
+                    onClick={() => updateStatus(row.id, 'IN_PROGRESS')}
+                  >
+                    <CheckCircle size={18} />
+                  </button>
+                  <button 
+                    className="icon-btn" 
+                    title="Marquer comme résolu" 
+                    style={{ color: 'var(--color-success)' }} 
+                    onClick={() => updateStatus(row.id, 'RESOLVED')}
+                  >
+                    <CheckCircle size={18} fill="currentColor" color="white" />
+                  </button>
+                </>
+              )}
+              {row.status === 'IN_PROGRESS' && (
                 <button 
                   className="icon-btn" 
                   title="Marquer comme résolu" 
