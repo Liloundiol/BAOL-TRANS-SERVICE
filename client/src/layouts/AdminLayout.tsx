@@ -36,6 +36,7 @@ const AdminLayout: React.FC = () => {
     { path: '/admin/packages', icon: <Package size={20} />, label: 'Colis', roles: ['ADMIN', 'AGENT'] },
     { path: '/admin/finance', icon: <DollarSign size={20} />, label: 'Finance', roles: ['ADMIN'] },
     { path: '/admin/reviews', icon: <MessageSquare size={20} />, label: 'Avis', roles: ['ADMIN'] },
+    { path: '/admin/complaints', icon: <MessageSquare size={20} />, label: 'Réclamations', roles: ['ADMIN', 'AGENT'] },
   ];
 
   const sidebarLinks = allSidebarLinks.filter(link => link.roles.includes(user?.role || ''));

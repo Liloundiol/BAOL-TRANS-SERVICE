@@ -66,6 +66,7 @@ function App() {
             <Route path="reservations" element={<ReservationsManagementPage />} />
             <Route path="finance" element={<FinanceManagementPage />} />
             <Route path="reviews" element={<ReviewsManagementPage />} />
+            <Route path="complaints" element={<ComplaintsManagementPage />} />
             {/* We will add more admin routes here later */}
           </Route>
         </Routes>
