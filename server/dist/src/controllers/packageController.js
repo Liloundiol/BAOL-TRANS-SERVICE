@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePackage = exports.updatePackageStatus = exports.createPackage = exports.getPackages = void 0;
+exports.payPackage = exports.deletePackage = exports.updatePackageStatus = exports.createPackage = exports.getPackages = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 // Get all packages
 const getPackages = async (req, res, next) => {
     try {
         const packages = await prisma.package.findMany({
+            where: req.user?.role === 'STUDENT' ? { senderId: req.user.userId } : undefined,
             include: {
                 sender: true,
                 trip: true
@@ -23,16 +24,28 @@ exports.getPackages = getPackages;
 // Create a new package
 const createPackage = async (req, res, next) => {
     try {
-        const { senderId, tripId, receiverPhone, receiverName, description, weight, price } = req.body;
+        const { senderId, tripId, receiverPhone, receiverName, description, weight, price, packageType } = req.body;
+        let finalSenderId = senderId || req.user?.userId;
+        let finalPrice = price;
+        if (packageType === 'VALISE_SAC') {
+            finalPrice = 4000;
+        }
+        else if (packageType === 'DOCUMENT') {
+            finalPrice = 2500;
+        }
+        else if (req.user?.role === 'STUDENT' || !finalPrice) {
+            // Fallback if no packageType is provided
+            finalPrice = Math.max(1000, weight * 500);
+        }
         const newPackage = await prisma.package.create({
             data: {
-                senderId,
+                senderId: finalSenderId,
                 tripId,
                 receiverPhone,
                 receiverName,
                 description,
                 weight,
-                price,
+                price: finalPrice,
                 status: 'PENDING'
             },
             include: {
@@ -81,3 +94,43 @@ const deletePackage = async (req, res, next) => {
     }
 };
 exports.deletePackage = deletePackage;
+// Pay for a package
+const payPackage = async (req, res, next) => {
+    try {
+        const { packageId, waveTransactionId, amount } = req.body;
+        if (!packageId || !waveTransactionId) {
+            res.status(400).json({ success: false, message: 'ID colis et transaction Wave requis' });
+            return;
+        }
+        const pkg = await prisma.package.findUnique({
+            where: { id: packageId },
+            include: { payment: true }
+        });
+        if (!pkg) {
+            res.status(404).json({ success: false, message: 'Colis introuvable' });
+            return;
+        }
+        if (pkg.payment && pkg.payment.status === 'COMPLETED') {
+            res.status(400).json({ success: false, message: 'Ce colis est déjà payé' });
+            return;
+        }
+        if (pkg.status === 'DELIVERED' || pkg.status === 'CANCELLED') {
+            res.status(400).json({ success: false, message: 'Ce colis est livré ou annulé' });
+            return;
+        }
+        // Créer le paiement
+        const payment = await prisma.payment.create({
+            data: {
+                packageId,
+                waveTransactionId,
+                amount: amount || pkg.price,
+                status: 'COMPLETED'
+            }
+        });
+        res.json({ success: true, package: pkg, payment });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.payPackage = payPackage;

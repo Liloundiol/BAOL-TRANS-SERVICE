@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadProof = exports.markTicketAsUsed = exports.updateReservationStatus = exports.getTicketByCode = exports.getAllReservations = exports.getMyReservations = exports.payReservation = exports.initiatePayment = exports.createReservation = void 0;
+exports.deleteReservation = exports.uploadProof = exports.markTicketAsUsed = exports.updateReservationStatus = exports.getTicketByCode = exports.getAllReservations = exports.getMyReservations = exports.payReservation = exports.initiatePayment = exports.createReservation = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const crypto_1 = __importDefault(require("crypto"));
 const notificationService_1 = require("../services/notificationService");
@@ -341,7 +341,7 @@ const updateReservationStatus = async (req, res, next) => {
         }
         const existingReservation = await prisma_1.default.reservation.findUnique({
             where: { id },
-            include: { ticket: true }
+            include: { ticket: true, bus: { include: { trip: true } } }
         });
         if (!existingReservation) {
             return res.status(404).json({ success: false, error: 'Réservation non trouvée' });
@@ -362,7 +362,7 @@ const updateReservationStatus = async (req, res, next) => {
                     data: {
                         reservationId: id,
                         waveTransactionId: 'CASH-ADMIN-' + Math.floor(Math.random() * 1000000),
-                        amount: 0, // Ideally we fetch the trip price here, but skipping for simplicity
+                        amount: existingReservation.bus.trip.price,
                         status: 'COMPLETED'
                     }
                 });
@@ -462,3 +462,36 @@ const uploadProof = async (req, res, next) => {
     }
 };
 exports.uploadProof = uploadProof;
+const deleteReservation = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        if (req.user.role !== 'ADMIN') {
+            return res.status(403).json({ success: false, error: 'Accès non autorisé' });
+        }
+        const reservation = await prisma_1.default.reservation.findUnique({
+            where: { id }
+        });
+        if (!reservation) {
+            return res.status(404).json({ success: false, error: 'Réservation non trouvée' });
+        }
+        await prisma_1.default.$transaction(async (tx) => {
+            // Delete associated ticket if it exists
+            await tx.ticket.deleteMany({
+                where: { reservationId: id }
+            });
+            // Delete associated payment if it exists
+            await tx.payment.deleteMany({
+                where: { reservationId: id }
+            });
+            // Delete the reservation itself
+            await tx.reservation.delete({
+                where: { id }
+            });
+        });
+        res.json({ success: true, message: 'Réservation supprimée définitivement' });
+    }
+    catch (error) {
+        next(error);
+    }
+};
+exports.deleteReservation = deleteReservation;

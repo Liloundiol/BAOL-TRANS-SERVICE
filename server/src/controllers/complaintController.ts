@@ -59,7 +59,7 @@ export const getComplaints = async (req: AuthRequest, res: Response, next: NextF
 // Update complaint status (Admin only)
 export const updateComplaintStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status } = req.body;
 
     const complaint = await prisma.complaint.update({

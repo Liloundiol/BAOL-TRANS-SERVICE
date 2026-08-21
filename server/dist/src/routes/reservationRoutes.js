@@ -15,4 +15,5 @@ router.post('/initiate-payment', reservationController_1.initiatePayment);
 router.post('/pay', reservationController_1.payReservation);
 router.patch('/:id/status', (0, authMiddleware_1.requireRole)(['ADMIN', 'AGENT']), reservationController_1.updateReservationStatus);
 router.patch('/:id/proof', reservationController_1.uploadProof);
+router.delete('/:id', (0, authMiddleware_1.requireRole)(['ADMIN']), reservationController_1.deleteReservation);
 exports.default = router;
