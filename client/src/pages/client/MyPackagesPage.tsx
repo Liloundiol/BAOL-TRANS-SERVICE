@@ -17,6 +17,7 @@ interface PackageType {
     destination: string;
     date: string;
   };
+  complaints?: { id: string; subject: string; message: string; status: string; createdAt: string }[];
 }
 
 import { useNavigate } from 'react-router-dom';
