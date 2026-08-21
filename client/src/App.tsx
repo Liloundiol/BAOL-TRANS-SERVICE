@@ -13,6 +13,7 @@ import ReservationsManagementPage from './pages/admin/ReservationsManagementPage
 import FinanceManagementPage from './pages/admin/FinanceManagementPage';
 import PackagesManagementPage from './pages/admin/PackagesManagementPage';
 import ReviewsManagementPage from './pages/admin/ReviewsManagementPage';
+import ComplaintsManagementPage from './pages/admin/ComplaintsManagementPage';
 import SearchTripsPage from './pages/client/SearchTripsPage';
 import BookingFlow from './pages/client/BookingFlow';
 import TicketPage from './pages/client/TicketPage';
