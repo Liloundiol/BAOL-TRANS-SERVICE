@@ -75,7 +75,7 @@ const ReservationsManagementPage: React.FC = () => {
 
     const headers = ['Client', 'Telephone', 'Trajet', 'Date', 'Heure', 'Montant', 'Statut', 'Date Reservation'];
     const csvContent = [
-      headers.join(','),
+      headers.join(';'),
       ...reservations.map(r => {
         const client = `${r.user?.firstName || ''} ${r.user?.lastName || ''}`.trim() || 'N/A';
         const phone = r.user?.phoneNumber || '';
@@ -91,7 +91,7 @@ const ReservationsManagementPage: React.FC = () => {
         const status = r.status;
         const created = r.createdAt ? new Date(r.createdAt).toLocaleString('fr-FR') : '';
         
-        return `"${client}","${phone}","${trip}","${date}","${time}","${price}","${status}","${created}"`;
+        return `"${client}";"${phone}";"${trip}";"${date}";"${time}";"${price}";"${status}";"${created}"`;
       })
     ].join('\n');
 
