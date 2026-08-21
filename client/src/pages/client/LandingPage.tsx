@@ -46,8 +46,9 @@ const LandingPage: React.FC = () => {
         </header>
 
         <div className="hero-content">
-          <h1>{user ? `Heureux de vous revoir, ${user.firstName || 'voyageur'}` : 'Voyagez à travers le Sénégal.'}</h1>
-          <p>Réservez votre billet en toute sécurité avec Baol Trans Services.</p>
+          <h1>{user ? `Heureux de vous revoir, ${user.firstName || 'voyageur'}!` : 'Heureux de vous revoir !'}</h1>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: '600', margin: '0.5rem 0' }}>Votre prochain voyage commence ici.</h2>
+          <p>Recherchez votre trajet, réservez votre billet en quelques clics et voyagez avec BTS en toute confiance. 💚</p>
         </div>
       </section>
 
