@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, Package as PackageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Package as PackageIcon, MessageSquare } from 'lucide-react';
 import { Button } from '../../components/shared/Button';
 import { Input } from '../../components/shared/Input';
 import { DataTable } from '../../components/admin/DataTable';
@@ -239,10 +239,16 @@ const PackagesManagementPage: React.FC = () => {
           <PackageIcon size={24} className="header-icon" />
           <h2>Gestion des Colis</h2>
         </div>
-        <Button onClick={() => handleOpenModal()} className="add-btn">
-          <Plus size={20} />
-          <span>Nouveau Colis</span>
-        </Button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Button onClick={() => window.location.href = '/admin/complaints'} className="btn-secondary" style={{ background: '#fef3c7', color: '#92400e', border: 'none' }}>
+            <MessageSquare size={20} style={{ marginRight: '0.5rem' }} />
+            <span>Voir les Réclamations</span>
+          </Button>
+          <Button onClick={() => handleOpenModal()} className="add-btn">
+            <Plus size={20} />
+            <span>Nouveau Colis</span>
+          </Button>
+        </div>
       </div>
 
       <div className="page-controls">
