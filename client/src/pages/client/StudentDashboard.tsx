@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { User, Ticket, Star, Settings, MessageSquare } from 'lucide-react';
+import { User, Ticket, Star, Settings, MessageSquare, MapPin, Calendar, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/shared/Button';
 import { apiFetch } from '../../services/api';
 import { calculateLoyalty } from '../../utils/loyalty';
+import { useAuth } from '../../context/AuthContext';
 import './StudentDashboard.css';
 
 const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [reservations, setReservations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Search state
+  const [departure, setDeparture] = useState('Dakar');
+  const [destination, setDestination] = useState('UGB');
+  const [date, setDate] = useState('');
+
   // Review state
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
@@ -30,6 +37,11 @@ const StudentDashboard: React.FC = () => {
     };
     fetchMyReservations();
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate('/search', { state: { departure, destination, date } });
+  };
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,12 +73,53 @@ const StudentDashboard: React.FC = () => {
 
   const paidReservationsCount = reservations.filter(r => r.status === 'PAID').length;
   const loyalty = calculateLoyalty(paidReservationsCount);
+  const userName = user?.firstName || 'Étudiant';
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-header-simple">
-        <h1>Mon Tableau de bord</h1>
-        <p>Bienvenue ! Voici le résumé de vos activités.</p>
+      <div className="dashboard-header-modern">
+        <div className="header-greeting">
+          <h1>Heureux de vous revoir,<br/>{userName}</h1>
+          <p>Réservez votre billet en toute sécurité avec Baol Trans Services.</p>
+        </div>
+        
+        <div className="search-card-wrapper">
+          <form className="dashboard-search-card" onSubmit={handleSearch}>
+            <h3>Où allez-vous ?</h3>
+            
+            <div className="search-inputs">
+              <div className="search-input-group">
+                <div className="input-icon"><MapPin size={20} color="#9CA3AF" /></div>
+                <div className="input-content">
+                  <label>DÉPART</label>
+                  <input type="text" value={departure} onChange={e => setDeparture(e.target.value)} placeholder="Ville de départ" />
+                </div>
+              </div>
+              <div className="input-divider"></div>
+              <div className="search-input-group">
+                <div className="input-icon"><MapPin size={20} color="#0B6E2E" /></div>
+                <div className="input-content">
+                  <label>ARRIVÉE</label>
+                  <input type="text" value={destination} onChange={e => setDestination(e.target.value)} placeholder="Votre destination" />
+                </div>
+              </div>
+              <div className="input-divider"></div>
+              <div className="search-input-group">
+                <div className="input-icon"><Calendar size={20} color="#9CA3AF" /></div>
+                <div className="input-content">
+                  <label>DATE</label>
+                  <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+                </div>
+              </div>
+            </div>
+            
+            <div className="search-action">
+              <button type="submit" className="search-submit-btn">
+                <Search size={20} /> Rechercher
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <div className="dashboard-stats">

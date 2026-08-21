@@ -4,21 +4,145 @@
   padding: 0 1rem;
 }
 
-.dashboard-header-simple {
-  margin-bottom: 2rem;
+/* Modern Header Styles */
+.dashboard-header-modern {
+  background-color: var(--color-primary); /* BTS Green #0B6E2E */
+  border-radius: 0 0 24px 24px;
+  padding: 2.5rem 1.5rem 6rem 1.5rem; /* Large bottom padding for overlap */
+  margin: -2rem -1rem 2rem -1rem; /* Negative margin to stretch to edges */
+  color: white;
+  position: relative;
 }
 
-.dashboard-header-simple h1 {
+.header-greeting h1 {
   font-size: 1.8rem;
-  color: var(--color-primary);
-  margin: 0 0 0.5rem 0;
   font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
 }
 
-.dashboard-header-simple p {
-  color: var(--color-gray-disabled);
+.header-greeting p {
   margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  line-height: 1.4;
+  max-width: 90%;
+}
+
+.search-card-wrapper {
+  position: absolute;
+  bottom: -40px; /* Overlap effect */
+  left: 1.5rem;
+  right: 1.5rem;
+  z-index: 10;
+}
+
+.dashboard-search-card {
+  background-color: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  color: var(--color-text);
+}
+
+.dashboard-search-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.search-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #f3f4f6;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.search-input-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.input-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+}
+
+.input-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-content label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 0.2rem;
+}
+
+.input-content input {
+  border: none;
+  background: transparent;
+  padding: 0;
   font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  outline: none;
+  font-family: inherit;
+}
+
+.input-content input::placeholder {
+  color: #9CA3AF;
+  font-weight: 400;
+}
+
+.input-divider {
+  height: 1px;
+  background-color: #f3f4f6;
+  margin: 0 1rem;
+}
+
+.search-submit-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #F4C430 0%, #eab308 100%);
+  color: #1F1F1F;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.search-submit-btn::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  background-color: var(--color-secondary); /* BTS Green Energy */
+  border-radius: 50%;
+  opacity: 0.9;
+}
+
+.dashboard-stats {
+  margin-top: 4rem; /* Give space for the overlapping card */
 }
 
 .dashboard-stats {
