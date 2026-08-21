@@ -24,7 +24,50 @@ import { useNavigate } from 'react-router-dom';
 const MyPackagesPage: React.FC = () => {
   const [packages, setPackages] = useState<PackageType[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Complaint state
+  const [selectedPackageForComplaint, setSelectedPackageForComplaint] = useState<string | null>(null);
+  const [complaintSubject, setComplaintSubject] = useState('Colis non reçu');
+  const [complaintMessage, setComplaintMessage] = useState('');
+  const [isSubmittingComplaint, setIsSubmittingComplaint] = useState(false);
+  const [complaintError, setComplaintError] = useState('');
+
   const navigate = useNavigate();
+
+  const openComplaintModal = (packageId: string) => {
+    setSelectedPackageForComplaint(packageId);
+    setComplaintSubject('Colis non reçu');
+    setComplaintMessage('');
+    setComplaintError('');
+  };
+
+  const submitComplaint = async () => {
+    if (!selectedPackageForComplaint) return;
+    setIsSubmittingComplaint(true);
+    setComplaintError('');
+
+    try {
+      const response = await apiFetch('/complaints', {
+        method: 'POST',
+        body: JSON.stringify({
+          packageId: selectedPackageForComplaint,
+          subject: complaintSubject,
+          message: complaintMessage
+        })
+      });
+
+      if (response.success) {
+        alert('Votre réclamation a bien été envoyée. Nous vous contacterons bientôt.');
+        setSelectedPackageForComplaint(null);
+      } else {
+        setComplaintError(response.message || 'Erreur lors de l\'envoi de la réclamation.');
+      }
+    } catch (err) {
+      setComplaintError('Une erreur réseau est survenue.');
+    } finally {
+      setIsSubmittingComplaint(false);
+    }
+  };
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -110,8 +153,68 @@ const MyPackagesPage: React.FC = () => {
                   <p className="price">{pkg.price} FCFA</p>
                 </div>
               </div>
+              
+              <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '1rem', textAlign: 'right' }}>
+                <button 
+                  onClick={() => openComplaintModal(pkg.id)}
+                  style={{ background: 'none', color: '#B91C1C', border: '1px solid #B91C1C', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500 }}
+                >
+                  Signaler un problème
+                </button>
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Complaint Modal */}
+      {selectedPackageForComplaint && (
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="modal-content" style={{ background: 'white', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '500px' }}>
+            <h3 style={{ marginBottom: '1rem', color: '#1F1F1F' }}>Signaler un problème avec votre colis</h3>
+            {complaintError && <div style={{ color: 'red', marginBottom: '1rem', fontSize: '0.9rem' }}>{complaintError}</div>}
+            
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>Sujet de la réclamation</label>
+              <select 
+                value={complaintSubject} 
+                onChange={(e) => setComplaintSubject(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem' }}
+              >
+                <option value="Colis non reçu">Je n'ai pas reçu mon colis</option>
+                <option value="Colis endommagé">Mon colis est endommagé</option>
+                <option value="Retard de livraison">Retard de livraison</option>
+                <option value="Autre problème">Autre problème</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: '#374151' }}>Détails (Optionnel)</label>
+              <textarea 
+                value={complaintMessage} 
+                onChange={(e) => setComplaintMessage(e.target.value)}
+                placeholder="Précisez votre problème..."
+                rows={4}
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #d1d5db', fontSize: '1rem', resize: 'vertical' }}
+              ></textarea>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => setSelectedPackageForComplaint(null)}
+                style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: '1px solid #d1d5db', background: 'white', color: '#374151', cursor: 'pointer', fontWeight: 500 }}
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={submitComplaint}
+                disabled={isSubmittingComplaint}
+                style={{ padding: '0.75rem 1.5rem', borderRadius: '8px', border: 'none', background: '#0B6E2E', color: 'white', cursor: 'pointer', fontWeight: 500, opacity: isSubmittingComplaint ? 0.7 : 1 }}
+              >
+                {isSubmittingComplaint ? 'Envoi...' : 'Envoyer la réclamation'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -23,6 +23,7 @@ model User {
   sentPackages  Package[]       @relation("SenderPackages")
   reservations  Reservation[]
   reviews       Review[]
+  complaints    Complaint[]
 
   @@index([role])
 }
@@ -162,6 +163,19 @@ model Package {
   sender        User          @relation("SenderPackages", fields: [senderId], references: [id])
   trip          Trip          @relation(fields: [tripId], references: [id])
   payment       Payment?
+  complaints    Complaint[]
+}
+
+model Complaint {
+  id          String   @id @default(uuid())
+  userId      String
+  packageId   String?
+  subject     String
+  message     String
+  status      String   @default("PENDING") // PENDING, RESOLVED
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  package     Package? @relation(fields: [packageId], references: [id])
 }
 
 model Review {

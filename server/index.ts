@@ -12,6 +12,7 @@ import financeRoutes from './src/routes/financeRoutes';
 import uploadRoutes from './src/routes/uploadRoutes';
 import packageRoutes from './src/routes/packageRoutes';
 import reviewRoutes from './src/routes/reviewRoutes';
+import complaintRoutes from './src/routes/complaintRoutes';
 import { errorHandler } from './src/middleware/errorHandler';
 import path from 'path';
 
@@ -39,6 +40,7 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/complaints', complaintRoutes);
 
 // Global Error Handler (must be after all routes)
 app.use(errorHandler);
