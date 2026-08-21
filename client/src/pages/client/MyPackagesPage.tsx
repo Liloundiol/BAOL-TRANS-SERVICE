@@ -154,13 +154,32 @@ const MyPackagesPage: React.FC = () => {
                 </div>
               </div>
               
-              <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '1rem', textAlign: 'right' }}>
-                <button 
-                  onClick={() => openComplaintModal(pkg.id)}
-                  style={{ background: 'none', color: '#B91C1C', border: '1px solid #B91C1C', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500 }}
-                >
-                  Signaler un problème
-                </button>
+              <div style={{ marginTop: '1rem', borderTop: '1px solid #e5e7eb', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {pkg.complaints && pkg.complaints.length > 0 && (
+                  <div style={{ textAlign: 'left', marginBottom: '0.5rem' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', color: '#374151' }}>Vos réclamations :</p>
+                    {pkg.complaints.map((complaint: any) => (
+                      <div key={complaint.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f3f4f6', padding: '0.5rem 0.75rem', borderRadius: '4px', marginBottom: '0.25rem' }}>
+                        <span style={{ fontSize: '0.85rem' }}>{complaint.subject}</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '0.2rem 0.5rem', borderRadius: '4px', 
+                          background: complaint.status === 'RESOLVED' ? '#d1fae5' : complaint.status === 'IN_PROGRESS' ? '#dbeafe' : '#fef3c7',
+                          color: complaint.status === 'RESOLVED' ? '#065f46' : complaint.status === 'IN_PROGRESS' ? '#1e40af' : '#92400e'
+                        }}>
+                          {complaint.status === 'RESOLVED' ? 'Résolu' : complaint.status === 'IN_PROGRESS' ? 'Prise en compte' : 'En attente'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div style={{ textAlign: 'right' }}>
+                  <button 
+                    onClick={() => openComplaintModal(pkg.id)}
+                    style={{ background: 'none', color: '#B91C1C', border: '1px solid #B91C1C', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500 }}
+                  >
+                    Signaler un problème
+                  </button>
+                </div>
               </div>
             </div>
           ))}
