@@ -223,7 +223,7 @@ const BookingFlow: React.FC = () => {
         <div className="booking-step" style={{ textAlign: 'center', padding: '2rem' }}>
           <h2 style={{ color: '#0B6E2E', marginBottom: '1rem' }}>Réservation en attente !</h2>
           <p style={{ marginBottom: '2rem' }}>Votre réservation a bien été enregistrée. L'administrateur vérifiera votre paiement Wave et validera votre billet.</p>
-          <p>Vous recevrez un SMS dès que votre billet sera validé.</p>
+          <p>Vous pourrez suivre l'état et télécharger votre billet directement depuis l'onglet <strong>Mes Réservations</strong> une fois validé.</p>
           <Button variant="primary" onClick={() => navigate('/dashboard')} style={{ marginTop: '2rem' }}>
             Voir mes réservations
           </Button>

@@ -45,7 +45,7 @@ const ReservationsManagementPage: React.FC = () => {
       });
       setReservations(prev => prev.map(r => r.id === id ? { ...r, status: newStatus as any } : r));
       if (newStatus === 'PAID') {
-        alert('Réservation validée, billet généré et SMS envoyé !');
+        alert('Réservation validée et billet généré ! Le client peut maintenant le télécharger sur son espace.');
       }
     } catch (error: any) {
       alert(error.message || 'Erreur lors de la mise à jour du statut');
