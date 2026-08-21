@@ -73,6 +73,52 @@ const FinanceManagementPage: React.FC = () => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(Number(amount));
   };
 
+  const handleExport = () => {
+    if (payments.length === 0) {
+      alert("Aucune donnée à exporter");
+      return;
+    }
+
+    const headers = ['Date', 'ID Wave', 'Passager / Expediteur', 'Telephone', 'Type', 'Trajet', 'Montant', 'Statut'];
+    const csvContent = [
+      headers.join(','),
+      ...payments.map(p => {
+        const date = new Date(p.paidAt).toLocaleString('fr-FR');
+        const waveId = p.waveTransactionId || '';
+        let name = '';
+        let phone = '';
+        let type = '';
+        let trip = '';
+        
+        if (p.reservation) {
+          type = 'Reservation';
+          name = `${p.reservation.user.firstName || ''} ${p.reservation.user.lastName || ''}`.trim() || 'N/A';
+          phone = p.reservation.user.phoneNumber || '';
+          trip = `${p.reservation.bus.trip.departure} - ${p.reservation.bus.trip.destination}`;
+        } else if (p.package) {
+          type = 'Colis';
+          name = `${p.package.sender.firstName || ''} ${p.package.sender.lastName || ''}`.trim() || 'N/A';
+          phone = p.package.sender.phoneNumber || '';
+          trip = `${p.package.trip.departure} - ${p.package.trip.destination}`;
+        }
+        
+        const amount = p.amount;
+        const status = p.status;
+        
+        return `"${date}","${waveId}","${name}","${phone}","${type}","${trip}","${amount}","${status}"`;
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `rapport_finances_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const columns: Column<Payment>[] = [
     { 
       header: 'Date', 
@@ -127,7 +173,7 @@ const FinanceManagementPage: React.FC = () => {
           <h2>Gestion des Finances</h2>
           <p style={{ color: 'var(--color-gray-disabled)', marginTop: '0.25rem' }}>Aperçu des revenus et paiements Wave</p>
         </div>
-        <Button variant="secondary">
+        <Button variant="secondary" onClick={handleExport}>
           <Download size={18} style={{ marginRight: '8px' }} />
           Exporter le rapport
         </Button>

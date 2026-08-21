@@ -67,6 +67,39 @@ const ReservationsManagementPage: React.FC = () => {
     }
   };
 
+  const handleExport = () => {
+    if (reservations.length === 0) {
+      alert("Aucune donnée à exporter");
+      return;
+    }
+
+    const headers = ['Client', 'Telephone', 'Trajet', 'Date', 'Heure', 'Montant', 'Statut', 'Date Reservation'];
+    const csvContent = [
+      headers.join(','),
+      ...reservations.map(r => {
+        const client = `${r.user?.firstName || ''} ${r.user?.lastName || ''}`.trim() || 'N/A';
+        const phone = r.user?.phoneNumber || '';
+        const trip = `${r.bus?.trip?.departure || ''} - ${r.bus?.trip?.destination || ''}`;
+        const date = r.bus?.trip?.date ? new Date(r.bus?.trip?.date).toLocaleDateString('fr-FR') : '';
+        const time = r.bus?.trip?.time || '';
+        const price = r.bus?.trip?.price || '';
+        const status = r.status;
+        const created = r.createdAt ? new Date(r.createdAt).toLocaleString('fr-FR') : '';
+        
+        return `"${client}","${phone}","${trip}","${date}","${time}","${price}","${status}","${created}"`;
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `rapport_reservations_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const columns: Column<Reservation>[] = [
     { 
       header: 'Client', 
@@ -143,7 +176,7 @@ const ReservationsManagementPage: React.FC = () => {
           <h2>Gestion des Réservations</h2>
           <p style={{ color: 'var(--color-gray-disabled)', marginTop: '0.25rem' }}>Consultez toutes les réservations des clients</p>
         </div>
-        <Button variant="secondary">
+        <Button variant="secondary" onClick={handleExport}>
           <Download size={18} style={{ marginRight: '8px' }} />
           Exporter
         </Button>
