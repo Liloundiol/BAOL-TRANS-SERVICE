@@ -81,7 +81,12 @@ const ReservationsManagementPage: React.FC = () => {
         const phone = r.user?.phoneNumber || '';
         const trip = `${r.bus?.trip?.departure || ''} - ${r.bus?.trip?.destination || ''}`;
         const date = r.bus?.trip?.date ? new Date(r.bus?.trip?.date).toLocaleDateString('fr-FR') : '';
-        const time = r.bus?.trip?.time || '';
+        
+        let time = r.bus?.trip?.time || '';
+        if (time.includes('T')) {
+          time = new Date(time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+
         const price = r.bus?.trip?.price || '';
         const status = r.status;
         const created = r.createdAt ? new Date(r.createdAt).toLocaleString('fr-FR') : '';
@@ -90,7 +95,7 @@ const ReservationsManagementPage: React.FC = () => {
       })
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
