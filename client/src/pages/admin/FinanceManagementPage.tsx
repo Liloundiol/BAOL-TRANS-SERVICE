@@ -105,7 +105,7 @@ const FinanceManagementPage: React.FC = () => {
         const amount = p.amount;
         const status = p.status;
         
-        return `"${date}";"${waveId}";"${name}";"${phone}";"${type}";"${trip}";"${amount}";"${status}"`;
+        return `="${date}";"${waveId}";"${name}";"${phone}";"${type}";"${trip}";"${amount}";"${status}"`;
       })
     ].join('\n');
 

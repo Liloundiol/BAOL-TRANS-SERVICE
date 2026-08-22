@@ -91,7 +91,7 @@ const ReservationsManagementPage: React.FC = () => {
         const status = r.status;
         const created = r.createdAt ? new Date(r.createdAt).toLocaleString('fr-FR') : '';
         
-        return `"${client}";"${phone}";"${trip}";"${date}";"${time}";"${price}";"${status}";"${created}"`;
+        return `"${client}";"${phone}";"${trip}";="${date}";="${time}";"${price}";"${status}";="${created}"`;
       })
     ].join('\n');
 
