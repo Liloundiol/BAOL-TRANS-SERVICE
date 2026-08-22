@@ -4,6 +4,8 @@ import { Button } from '../../components/shared/Button';
 import { DataTable } from '../../components/admin/DataTable';
 import type { Column } from '../../components/admin/DataTable';
 import { apiFetch, API_BASE_URL } from '../../services/api';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './AdminPages.css';
 
 interface Reservation {
@@ -73,36 +75,37 @@ const ReservationsManagementPage: React.FC = () => {
       return;
     }
 
-    const headers = ['Client', 'Telephone', 'Trajet', 'Date', 'Heure', 'Montant', 'Statut', 'Date Reservation'];
-    const csvContent = [
-      headers.join(','),
-      ...reservations.map(r => {
-        const client = `${r.user?.firstName || ''} ${r.user?.lastName || ''}`.trim() || 'N/A';
-        const phone = r.user?.phoneNumber || '';
-        const trip = `${r.bus?.trip?.departure || ''} - ${r.bus?.trip?.destination || ''}`;
-        const date = r.bus?.trip?.date ? new Date(r.bus?.trip?.date).toLocaleDateString('fr-FR') : '';
-        
-        let time = r.bus?.trip?.time || '';
-        if (time.includes('T')) {
-          time = new Date(time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        }
+    const doc = new jsPDF('landscape');
+    doc.text("Rapport des Réservations - BTS", 14, 15);
 
-        const price = r.bus?.trip?.price || '';
-        const status = r.status;
-        const created = r.createdAt ? new Date(r.createdAt).toLocaleString('fr-FR') : '';
-        
-        return `"${client}","${phone}","${trip}","${date}","${time}","${price}","${status}","${created}"`;
-      })
-    ].join('\n');
+    const tableData = reservations.map(r => {
+      const client = `${r.user?.firstName || ''} ${r.user?.lastName || ''}`.trim() || 'N/A';
+      const phone = r.user?.phoneNumber || '';
+      const trip = `${r.bus?.trip?.departure || ''} - ${r.bus?.trip?.destination || ''}`;
+      const date = r.bus?.trip?.date ? new Date(r.bus?.trip?.date).toLocaleDateString('fr-FR') : '';
+      
+      let time = r.bus?.trip?.time || '';
+      if (time.includes('T')) {
+        time = new Date(time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      }
 
-    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `rapport_reservations_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const price = r.bus?.trip?.price || '';
+      const status = r.status === 'PAID' ? 'Payé' : r.status === 'PENDING' ? 'En attente' : 'Annulé';
+      const created = r.createdAt ? new Date(r.createdAt).toLocaleString('fr-FR') : '';
+      
+      return [client, phone, trip, date, time, price, status, created];
+    });
+
+    autoTable(doc, {
+      head: [['Client', 'Téléphone', 'Trajet', 'Date', 'Heure', 'Montant', 'Statut', 'Date Réservation']],
+      body: tableData,
+      startY: 20,
+      theme: 'grid',
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [11, 110, 46] }
+    });
+
+    doc.save(`rapport_reservations_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   const columns: Column<Reservation>[] = [
@@ -183,7 +186,7 @@ const ReservationsManagementPage: React.FC = () => {
         </div>
         <Button variant="secondary" onClick={handleExport}>
           <Download size={18} style={{ marginRight: '8px' }} />
-          Exporter
+          Exporter (PDF)
         </Button>
       </div>
 
