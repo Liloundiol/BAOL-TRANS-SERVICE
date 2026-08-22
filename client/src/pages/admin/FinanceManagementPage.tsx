@@ -81,7 +81,7 @@ const FinanceManagementPage: React.FC = () => {
 
     const headers = ['Date', 'ID Wave', 'Passager / Expediteur', 'Telephone', 'Type', 'Trajet', 'Montant', 'Statut'];
     const csvContent = [
-      headers.join(';'),
+      headers.join(','),
       ...payments.map(p => {
         const date = new Date(p.paidAt).toLocaleString('fr-FR');
         const waveId = p.waveTransactionId || '';
@@ -105,7 +105,7 @@ const FinanceManagementPage: React.FC = () => {
         const amount = p.amount;
         const status = p.status;
         
-        return `="${date}";"${waveId}";"${name}";"${phone}";"${type}";"${trip}";"${amount}";"${status}"`;
+        return `"${date}","${waveId}","${name}","${phone}","${type}","${trip}","${amount}","${status}"`;
       })
     ].join('\n');
 
