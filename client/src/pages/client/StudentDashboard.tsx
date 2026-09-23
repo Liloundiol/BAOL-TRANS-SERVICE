@@ -112,9 +112,22 @@ const StudentDashboard: React.FC = () => {
                   </span>
                 </div>
                 {reservation.status === 'PAID' && reservation.ticket ? (
-                  <Button variant="primary" onClick={() => navigate(`/ticket/${reservation.ticket.ticketCode}`)}>Voir QR Code</Button>
+                  <Button variant="primary" onClick={() => navigate(`/ticket/${reservation.ticket.ticketCode}`)}>Voir mon ticket</Button>
                 ) : (
-                  <Button variant="secondary" onClick={() => navigate(`/book/${reservation.bus.trip.id}`)}>Payer</Button>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <Button 
+                      variant="secondary" 
+                      onClick={() => {
+                        const el = document.getElementById(`pending-msg-${reservation.id}`);
+                        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+                      }}
+                    >
+                      Voir mon ticket
+                    </Button>
+                    <div id={`pending-msg-${reservation.id}`} style={{ display: 'none', fontSize: '0.875rem', color: '#B8860B', backgroundColor: 'rgba(244, 196, 48, 0.1)', padding: '0.5rem', borderRadius: '4px', textAlign: 'center' }}>
+                      Votre ticket est en attente de confirmation.
+                    </div>
+                  </div>
                 )}
               </div>
             ))
