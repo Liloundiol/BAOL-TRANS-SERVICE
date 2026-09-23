@@ -6,7 +6,11 @@ import { DataTable } from '../../components/admin/DataTable';
 import type { Column } from '../../components/admin/DataTable';
 import { Modal } from '../../components/shared/Modal';
 import { apiFetch } from '../../services/api';
+import useSWR from 'swr';
+import { Loader } from '../../components/shared/Loader';
 import './AdminPages.css';
+
+const fetcher = (url: string) => apiFetch(url);
 
 interface User {
   id: string;
@@ -48,9 +52,15 @@ interface Package {
 }
 
 const PackagesManagementPage: React.FC = () => {
-  const [packages, setPackages] = useState<Package[]>([]);
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const { data: packagesData, mutate: mutatePackages } = useSWR('/packages', fetcher);
+  const { data: tripsData } = useSWR('/trips', fetcher);
+  const { data: usersData } = useSWR('/users', fetcher);
+
+  const packages: Package[] = packagesData?.packages || [];
+  const trips: Trip[] = tripsData?.trips || [];
+  const users: User[] = usersData?.users || [];
+  const isLoading = !packagesData || !tripsData || !usersData;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingPackageId, setEditingPackageId] = useState<string | null>(null);
@@ -68,25 +78,6 @@ const PackagesManagementPage: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
-
-  const fetchData = async () => {
-    try {
-      const [packagesData, tripsData, usersData] = await Promise.all([
-        apiFetch('/packages'),
-        apiFetch('/trips'),
-        apiFetch('/users')
-      ]);
-      setPackages(packagesData.packages || []);
-      setTrips(tripsData.trips || []);
-      setUsers(usersData.users || []);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const resetForm = () => {
     setSenderId('');
@@ -147,7 +138,7 @@ const PackagesManagementPage: React.FC = () => {
       }
 
       setIsModalOpen(false);
-      fetchData();
+      mutatePackages();
     } catch (error: any) {
       setFormError(error.message || 'Une erreur est survenue');
     } finally {
@@ -160,7 +151,7 @@ const PackagesManagementPage: React.FC = () => {
     try {
       await apiFetch(`/packages/${deletingPackageId}`, { method: 'DELETE' });
       setDeletingPackageId(null);
-      fetchData();
+      mutatePackages();
     } catch (error) {
       console.error(error);
     }
@@ -172,7 +163,7 @@ const PackagesManagementPage: React.FC = () => {
         method: 'PATCH',
         body: JSON.stringify({ status: newStatus })
       });
-      fetchData();
+      mutatePackages();
     } catch (error) {
       console.error(error);
     }
@@ -249,6 +240,10 @@ const PackagesManagementPage: React.FC = () => {
       )
     }
   ];
+
+  if (isLoading) {
+    return <Loader message="Chargement des colis..." fullScreen />;
+  }
 
   return (
     <div className="admin-page">

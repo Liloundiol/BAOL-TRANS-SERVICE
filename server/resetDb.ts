@@ -35,6 +35,12 @@ async function main() {
   console.log('Deleting LoyaltyAccounts...');
   await prisma.loyaltyAccount.deleteMany({});
 
+  console.log('Deleting Reviews...');
+  await prisma.review.deleteMany({});
+
+  console.log('Deleting Complaints...');
+  await prisma.complaint.deleteMany({});
+
   console.log('Deleting non-admin Users...');
   await prisma.user.deleteMany({
     where: {

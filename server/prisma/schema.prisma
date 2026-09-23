@@ -164,6 +164,10 @@ model Package {
   trip          Trip          @relation(fields: [tripId], references: [id])
   payment       Payment?
   complaints    Complaint[]
+
+  @@index([senderId])
+  @@index([tripId])
+  @@index([status])
 }
 
 model Complaint {

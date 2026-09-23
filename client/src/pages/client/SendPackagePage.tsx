@@ -46,7 +46,7 @@ const SendPackagePage: React.FC = () => {
     return 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTripId) {
       setError('Veuillez sélectionner un trajet.');
@@ -57,6 +57,11 @@ const SendPackagePage: React.FC = () => {
       return;
     }
     
+    setError('');
+    setStep(2); // Move to Payment step
+  };
+
+  const handlePaymentAndSubmit = async () => {
     setIsSubmitting(true);
     setError('');
 
@@ -68,17 +73,16 @@ const SendPackagePage: React.FC = () => {
           receiverName,
           receiverPhone,
           description: packageType === 'VALISE_SAC' ? `Valise/Sac : ${description}` : `Document : ${description}`,
-          packageType, // Send package type to backend for price validation
-          weight: 0, // Keep weight to 0 to avoid breaking schema
+          packageType, 
+          weight: 0, 
         })
       });
 
       if (response.success) {
-        // Open Wave link like reservations
         if (import.meta.env.VITE_WAVE_MERCHANT_LINK) {
           window.open(import.meta.env.VITE_WAVE_MERCHANT_LINK, '_blank');
         }
-        setStep(2); // Go to success step
+        setStep(3); // Go to final success step
       }
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la création du colis.');
@@ -87,7 +91,7 @@ const SendPackagePage: React.FC = () => {
     }
   };
 
-  if (step === 2) {
+  if (step === 3) {
     return (
       <div className="send-package-page">
         <div className="package-hero">
@@ -96,16 +100,57 @@ const SendPackagePage: React.FC = () => {
         </div>
         <div className="package-form-container" style={{ textAlign: 'center', padding: '2rem' }}>
           <h2 style={{ color: '#0B6E2E', marginBottom: '1rem' }}>Votre demande a bien été enregistrée.</h2>
-          <p style={{ marginBottom: '1rem', color: '#374151' }}>
-            Payez <strong>{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(calculatePrice())}</strong> sur Wave au numéro : <br/>
-            <strong style={{color: '#111827', fontSize: '1.2em'}}>{import.meta.env.VITE_WAVE_MERCHANT_PHONE || '77 340 24 25'}</strong>
-          </p>
           <p style={{ marginBottom: '2rem', color: '#6b7280' }}>
-            L'administrateur vérifiera votre paiement Wave et validera votre colis.
+            L'administrateur vérifiera votre paiement Wave et validera votre colis. Vous pouvez suivre son statut dans votre espace.
           </p>
           <Button variant="primary" onClick={() => navigate('/my-packages')} style={{ marginTop: '1rem' }}>
             Voir mes colis
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 2) {
+    const selectedTrip = trips.find(t => t.id === selectedTripId);
+    return (
+      <div className="send-package-page">
+        <div className="package-hero">
+          <Package size={48} className="package-hero-icon" />
+          <h1>Paiement du Colis</h1>
+        </div>
+        
+        <div className="package-form-container">
+          <h2 style={{ marginBottom: '1.5rem', fontSize: '1.2rem', color: '#1F1F1F' }}>Résumé de l'envoi</h2>
+          
+          <div style={{ background: '#f9fafb', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
+            <p style={{ marginBottom: '0.5rem' }}><strong>Destinataire :</strong> {receiverName} ({receiverPhone})</p>
+            <p style={{ marginBottom: '0.5rem' }}><strong>Trajet :</strong> {selectedTrip?.departure} → {selectedTrip?.destination}</p>
+            <p style={{ marginBottom: '0.5rem' }}><strong>Type :</strong> {packageType === 'VALISE_SAC' ? 'Valise / Sac' : 'Document'}</p>
+            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+              <span>Total à payer :</span>
+              <span style={{ color: '#0B6E2E' }}>{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(calculatePrice())}</span>
+            </div>
+          </div>
+
+          <div style={{ padding: '1.5rem', backgroundColor: '#FEF2F2', borderRadius: '8px', border: '1px solid #F87171', marginBottom: '1.5rem' }}>
+            <h3 style={{ color: '#B91C1C', marginBottom: '1rem', fontSize: '1.1rem' }}>Paiement via Wave</h3>
+            <ol style={{ paddingLeft: '1.5rem', marginBottom: '1rem', color: '#7F1D1D' }}>
+              <li style={{ marginBottom: '0.5rem' }}>Cliquez sur le bouton ci-dessous pour ouvrir Wave (ou ouvrez l'application)</li>
+              <li>Envoyez le montant exact au <strong style={{fontSize: '1.1em'}}>{import.meta.env.VITE_WAVE_MERCHANT_PHONE || '77 340 24 25'}</strong></li>
+            </ol>
+          </div>
+          
+          {error && <div className="error-alert">{error}</div>}
+
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <Button variant="secondary" onClick={() => setStep(1)} style={{ flex: 1 }}>
+              Retour
+            </Button>
+            <Button variant="primary" onClick={handlePaymentAndSubmit} isLoading={isSubmitting} style={{ flex: 2 }}>
+              🔗 Payer et confirmer l'envoi
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -124,7 +169,7 @@ const SendPackagePage: React.FC = () => {
           <strong>⚠️ Attention :</strong> Les objets sensibles (ordinateur, téléphone, etc.) ne sont pas acceptés.
         </div>
 
-        <form onSubmit={handleSubmit} className="package-form">
+        <form onSubmit={handleContinue} className="package-form">
           {error && <div className="error-alert">{error}</div>}
           
           <div className="form-section">
@@ -213,8 +258,8 @@ const SendPackagePage: React.FC = () => {
             )}
           </div>
 
-          <Button type="submit" fullWidth isLoading={isSubmitting} className="submit-package-btn" disabled={!selectedTripId}>
-            Confirmer et Payer
+          <Button type="submit" fullWidth disabled={!selectedTripId}>
+            Continuer vers le paiement
           </Button>
         </form>
       </div>

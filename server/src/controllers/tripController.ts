@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/prisma';
+import NodeCache from 'node-cache';
+
+const tripCache = new NodeCache({ stdTTL: 30 }); // Cache de 30 secondes pour les trajets
 
 export const getTrips = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -8,6 +11,13 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
     const pageNumber = Number(page) || 1;
     const pageSize = Number(limit) || 50;
     const skip = (pageNumber - 1) * pageSize;
+    
+    const cacheKey = `trips_${departure || 'all'}_${destination || 'all'}_${date || 'all'}_${pageNumber}_${pageSize}`;
+    const cachedResponse = tripCache.get(cacheKey);
+    
+    if (cachedResponse) {
+      return res.json(cachedResponse);
+    }
 
     const whereClause: any = {
       status: 'ACTIVE'
@@ -75,7 +85,7 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
       };
     });
 
-    res.json({ 
+    const responseData = { 
       success: true, 
       trips: formattedTrips,
       pagination: {
@@ -84,7 +94,10 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
         limit: pageSize,
         totalPages: Math.ceil(total / pageSize)
       }
-    });
+    };
+    
+    tripCache.set(cacheKey, responseData);
+    res.json(responseData);
   } catch (error) {
     next(error);
   }

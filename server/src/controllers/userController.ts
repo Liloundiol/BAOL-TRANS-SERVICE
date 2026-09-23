@@ -5,6 +5,7 @@ import prisma from '../config/prisma';
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
     const users = await prisma.user.findMany({
+      take: 100, // Added to improve performance
       select: {
         id: true,
         phoneNumber: true,

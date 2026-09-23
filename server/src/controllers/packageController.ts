@@ -9,6 +9,7 @@ export const getPackages = async (req: AuthRequest, res: Response, next: NextFun
   try {
     const packages = await prisma.package.findMany({
       where: req.user?.role === 'STUDENT' ? { senderId: req.user.userId } : undefined,
+      take: 50, // Added to improve performance
       include: {
         sender: true,
         trip: true,
