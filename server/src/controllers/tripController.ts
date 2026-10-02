@@ -47,7 +47,7 @@ export const getTrips = async (req: Request, res: Response, next: NextFunction) 
           buses: {
             include: {
               reservations: {
-                where: { status: { not: 'CANCELLED' } },
+                where: { status: 'PAID' },
                 select: { id: true, seatNumber: true } // Optimisation
               }
             }
@@ -185,7 +185,7 @@ export const getTripById = async (req: Request, res: Response, next: NextFunctio
         buses: {
           include: {
             reservations: {
-              where: { status: { not: 'CANCELLED' } }
+              where: { status: 'PAID' }
             }
           }
         }

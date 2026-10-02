@@ -103,6 +103,9 @@ const AdminLayout: React.FC = () => {
               <Bell size={20} />
               <span className="notification-dot"></span>
             </button>
+            <button className="topbar-btn icon-btn" onClick={handleLogout} title="Se déconnecter" style={{ color: '#DC2626' }}>
+              <LogOut size={20} />
+            </button>
             <div className="topbar-user">
               <div className="avatar">{user?.firstName?.[0]?.toUpperCase() || 'A'}</div>
               <div className="user-info">

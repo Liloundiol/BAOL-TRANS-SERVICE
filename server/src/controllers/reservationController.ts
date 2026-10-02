@@ -21,7 +21,7 @@ export const createReservation = async (req: AuthRequest, res: Response, next: N
         buses: {
           include: {
             reservations: {
-              where: { status: { not: 'CANCELLED' } }
+              where: { status: 'PAID' }
             }
           }
         }
@@ -34,6 +34,8 @@ export const createReservation = async (req: AuthRequest, res: Response, next: N
 
     let assignedBusId = null;
     let assignedSeat = null;
+    let assignedBusCapacity = 0;
+    let assignedBusOccupied = 0;
 
     for (const bus of trip.buses) {
       if (bus.status === 'AVAILABLE') {
@@ -44,6 +46,8 @@ export const createReservation = async (req: AuthRequest, res: Response, next: N
           if (!occupiedSeats.includes(requestedSeat) && requestedSeat >= 1 && requestedSeat <= bus.capacity) {
             assignedBusId = bus.id;
             assignedSeat = requestedSeat;
+            assignedBusCapacity = bus.capacity;
+            assignedBusOccupied = occupiedSeats.length;
             break;
           } else {
             return res.status(400).json({ success: false, error: 'Le siège sélectionné est déjà occupé ou invalide' });
@@ -53,6 +57,8 @@ export const createReservation = async (req: AuthRequest, res: Response, next: N
             if (!occupiedSeats.includes(i)) {
               assignedBusId = bus.id;
               assignedSeat = i;
+              assignedBusCapacity = bus.capacity;
+              assignedBusOccupied = occupiedSeats.length;
               break;
             }
           }
@@ -77,38 +83,35 @@ export const createReservation = async (req: AuthRequest, res: Response, next: N
       }
     });
 
-    const updatedBus = await prisma.bus.findUnique({
-      where: { id: assignedBusId },
-      include: { reservations: { where: { status: { not: 'CANCELLED' } } } }
-    });
-
-    if (updatedBus && updatedBus.reservations.length >= updatedBus.capacity) {
-      await prisma.bus.update({
-        where: { id: assignedBusId },
-        data: { status: 'FULL' }
-      });
-      
-      await prisma.bus.create({
-        data: {
-          tripId: trip.id,
-          busNumber: `BTS-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
-          capacity: 13,
-          status: 'AVAILABLE'
-        }
-      });
+    if ((assignedBusOccupied + 1) >= assignedBusCapacity) {
+      Promise.all([
+        prisma.bus.update({
+          where: { id: assignedBusId },
+          data: { status: 'FULL' }
+        }),
+        prisma.bus.create({
+          data: {
+            tripId: trip.id,
+            busNumber: `BTS-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+            capacity: 13,
+            status: 'AVAILABLE'
+          }
+        })
+      ]).catch(err => console.error("Erreur màj bus:", err));
     }
 
-    const admins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
-    if (admins.length > 0) {
-      await prisma.notification.createMany({
-        data: admins.map(admin => ({
-          userId: admin.id,
-          title: 'Nouvelle Réservation',
-          message: `Nouvelle réservation en attente pour le trajet ${trip.departure} -> ${trip.destination}`,
-          type: 'IN_APP'
-        }))
-      });
-    }
+    prisma.user.findMany({ where: { role: 'ADMIN' } }).then(admins => {
+      if (admins.length > 0) {
+        prisma.notification.createMany({
+          data: admins.map(admin => ({
+            userId: admin.id,
+            title: 'Nouvelle Réservation',
+            message: `Nouvelle réservation en attente pour le trajet ${trip.departure} -> ${trip.destination}`,
+            type: 'IN_APP'
+          }))
+        }).catch(err => console.error("Erreur création notif admin:", err));
+      }
+    }).catch(err => console.error("Erreur fetch admin:", err));
 
     res.status(201).json({ success: true, reservation });
   } catch (error) {

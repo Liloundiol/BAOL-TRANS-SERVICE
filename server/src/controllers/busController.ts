@@ -12,7 +12,7 @@ export const getAllBuses = async (req: AuthRequest, res: Response, next: NextFun
       include: {
         trip: true,
         reservations: {
-          where: { status: { not: 'CANCELLED' } }
+          where: { status: 'PAID' }
         }
       },
       orderBy: {
