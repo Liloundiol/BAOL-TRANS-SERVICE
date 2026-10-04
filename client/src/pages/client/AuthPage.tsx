@@ -26,7 +26,7 @@ const AuthPage: React.FC = () => {
     if (isAuthenticated) {
       if (location.state?.returnTo) {
         navigate(location.state.returnTo);
-      } else if (user?.role === 'ADMIN') {
+      } else if (['ADMIN', 'AGENT', 'CONTROLLER'].includes(user?.role || '')) {
         navigate('/admin/dashboard');
       } else {
         navigate('/dashboard');
@@ -55,7 +55,7 @@ const AuthPage: React.FC = () => {
         // Redirect based on role
         if (location.state?.returnTo) {
           navigate(location.state.returnTo);
-        } else if (data.user.role === 'ADMIN') {
+        } else if (['ADMIN', 'AGENT', 'CONTROLLER'].includes(data.user.role)) {
           navigate('/admin/dashboard');
         } else {
           navigate('/');
