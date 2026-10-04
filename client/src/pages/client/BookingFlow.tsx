@@ -159,9 +159,10 @@ const BookingFlow: React.FC = () => {
       try {
         const data = await apiFetch('/reservations/me?limit=20');
         if (data.success && data.reservations) {
-          const activeRes = data.reservations.find((r: any) => 
-            r.status !== 'CANCELLED'
-          );
+          // Prioritize showing a PAID reservation if one exists, otherwise a PENDING one
+          const activeRes = data.reservations.find((r: any) => r.status === 'PAID') 
+                         || data.reservations.find((r: any) => r.status === 'PENDING');
+                         
           if (activeRes) {
             setExistingReservation(activeRes);
           }
