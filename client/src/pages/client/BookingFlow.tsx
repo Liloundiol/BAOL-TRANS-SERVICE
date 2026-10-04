@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/shared/Button';
 import { Select } from '../../components/shared/Select';
+import { Modal } from '../../components/shared/Modal';
 import { apiFetch, API_BASE_URL } from '../../services/api';
 import './BookingFlow.css';
 
@@ -138,6 +139,8 @@ const BookingFlow: React.FC = () => {
   const [trip, setTrip] = useState<any>(null);
   const [reservationData, setReservationData] = useState<any>(null);
   const [bookingPoints, setBookingPoints] = useState({ boarding: '', dropoff: '' });
+  const [existingReservation, setExistingReservation] = useState<any>(null);
+  const [showPopup, setShowPopup] = useState(true);
 
   useEffect(() => {
     const fetchTrip = async () => {
@@ -151,8 +154,26 @@ const BookingFlow: React.FC = () => {
         setIsLoading(false);
       }
     };
+
+    const fetchExistingReservations = async () => {
+      try {
+        const data = await apiFetch('/reservations/me?limit=20');
+        if (data.success && data.reservations) {
+          const activeRes = data.reservations.find((r: any) => 
+            r.status !== 'CANCELLED'
+          );
+          if (activeRes) {
+            setExistingReservation(activeRes);
+          }
+        }
+      } catch (err) {
+        console.error("Erreur lors de la vérification des réservations existantes", err);
+      }
+    };
+
     if (id) {
       fetchTrip();
+      fetchExistingReservations();
     }
   }, [id]);
 
@@ -208,6 +229,33 @@ const BookingFlow: React.FC = () => {
 
       {error && <div className="auth-alert error" style={{margin: '1rem'}}>{error}</div>}
       {isLoading && <p style={{textAlign: 'center', margin: '1rem'}}>Chargement en cours...</p>}
+      
+      <Modal 
+        isOpen={!!existingReservation && showPopup && step === 1} 
+        onClose={() => navigate(-1)} 
+        title="⚠️ Réservation existante"
+      >
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ marginBottom: '1rem', color: '#4B5563' }}>
+            Vous avez déjà une réservation récente dans le système.
+          </p>
+          <p style={{ marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
+            Trajet : <strong>{existingReservation?.bus?.trip?.departure} → {existingReservation?.bus?.trip?.destination}</strong><br/>
+            Statut : <br/>
+            <strong style={{ color: existingReservation?.status === 'PAID' ? '#0B6E2E' : '#D97706' }}>
+              {existingReservation?.status === 'PAID' ? 'Confirmée (Payée)' : 'En attente de paiement'}
+            </strong>
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <Button variant="secondary" onClick={() => navigate(-1)} style={{ flex: 1 }}>
+              Annuler
+            </Button>
+            <Button variant="primary" onClick={() => setShowPopup(false)} style={{ flex: 1 }}>
+              Continuer
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {!isLoading && step === 1 && trip && <DetailsSelection onNext={handleDetailsSelected} trip={trip} />}
       {!isLoading && step === 2 && reservationData && (
