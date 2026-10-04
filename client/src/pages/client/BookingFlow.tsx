@@ -234,40 +234,45 @@ const BookingFlow: React.FC = () => {
       <Modal 
         isOpen={!!existingReservation && showPopup && step === 1} 
         onClose={() => navigate(-1)} 
-        title={existingReservation?.bus?.trip?.id === id ? "MODALE – RÉSERVATION SIMILAIRE DÉTECTÉE" : "MODALE – RÉSERVATION ACTIVE DÉTECTÉE"}
+        title="Information de réservation"
       >
-        <div style={{ textAlign: 'left', color: '#1F1F1F' }}>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-            <span>⚠️</span> 
-            {existingReservation?.bus?.trip?.id === id ? "Une réservation similaire existe déjà" : "Une réservation active existe déjà"}
-          </h3>
+        <div style={{ textAlign: 'left', color: '#1F1F1F', padding: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', backgroundColor: '#FEF3C7', padding: '1rem', borderRadius: '8px', border: '1px solid #F59E0B' }}>
+            <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+            <h3 style={{ fontSize: '1.1rem', margin: 0, color: '#92400E', fontWeight: 600 }}>
+              {existingReservation?.bus?.trip?.id === id ? "Réservation similaire détectée" : "Réservation active détectée"}
+            </h3>
+          </div>
           
-          <p style={{ marginBottom: '1rem', fontSize: '1rem' }}>
-            {existingReservation?.bus?.trip?.id === id ? "Vous avez déjà une réservation récente pour :" : "Vous avez une réservation récente pour un autre trajet :"}
+          <p style={{ marginBottom: '1rem', fontSize: '1rem', color: '#4B5563' }}>
+            {existingReservation?.bus?.trip?.id === id ? "Vous avez déjà une réservation récente pour le trajet :" : "Vous avez une réservation récente pour un autre trajet :"}
           </p>
           
-          <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>🚌</span> {existingReservation?.bus?.trip?.departure} → {existingReservation?.bus?.trip?.destination}
-          </p>
-          
-          <p style={{ marginBottom: '1.5rem', fontSize: '1rem' }}>
-            Statut : {existingReservation?.status === 'PAID' ? 'Confirmée (Payée)' : 'En attente de paiement'}
-          </p>
+          <div style={{ backgroundColor: '#F3F4F6', padding: '1.25rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
+            <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#111827' }}>
+              <span>🚌</span> {existingReservation?.bus?.trip?.departure} → {existingReservation?.bus?.trip?.destination}
+            </p>
+            <p style={{ margin: 0, fontSize: '0.95rem', color: '#4B5563' }}>
+              Statut : <strong style={{ color: existingReservation?.status === 'PAID' ? '#0B6E2E' : '#D97706' }}>
+                {existingReservation?.status === 'PAID' ? 'Confirmée (Payée)' : 'En attente de paiement'}
+              </strong>
+            </p>
+          </div>
 
-          <p style={{ marginBottom: '1.5rem', fontSize: '1rem', lineHeight: '1.5' }}>
+          <p style={{ marginBottom: '1.5rem', fontSize: '0.95rem', lineHeight: '1.5', color: '#4B5563' }}>
             Si vous souhaitez réserver une ou plusieurs places supplémentaires pour vous-même ou pour d'autres voyageurs, vous pouvez continuer.
           </p>
 
-          <p style={{ marginBottom: '2rem', fontSize: '1rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <p style={{ marginBottom: '2rem', fontSize: '1rem', fontWeight: 500, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span>👉</span> Voulez-vous vraiment effectuer une nouvelle réservation ?
           </p>
 
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'space-between' }}>
-            <Button variant="secondary" onClick={() => navigate(-1)} style={{ flex: 1, backgroundColor: 'transparent', color: '#1F1F1F', border: 'none', fontWeight: 600 }}>
-              [ANNULER]
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <Button variant="secondary" onClick={() => navigate(-1)}>
+              Annuler
             </Button>
-            <Button variant="primary" onClick={() => setShowPopup(false)} style={{ flex: 1, backgroundColor: 'transparent', color: '#0B6E2E', border: 'none', fontWeight: 600 }}>
-              [OUI, CONTINUER]
+            <Button variant="primary" onClick={() => setShowPopup(false)}>
+              Oui, continuer
             </Button>
           </div>
         </div>
