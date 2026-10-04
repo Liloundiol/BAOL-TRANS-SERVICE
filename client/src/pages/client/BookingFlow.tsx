@@ -237,8 +237,8 @@ const BookingFlow: React.FC = () => {
         title="⚠️ Réservation existante"
       >
         <div style={{ textAlign: 'center' }}>
-          <p style={{ marginBottom: '1rem', color: '#4B5563' }}>
-            Vous avez déjà une réservation récente dans le système.
+          <p style={{ marginBottom: '1rem', color: '#4B5563', fontSize: '1.05rem', fontWeight: 500 }}>
+            Vous avez une réservation existante dans le système, voulez-vous en faire une autre ?
           </p>
           <p style={{ marginBottom: '1.5rem', padding: '0.75rem', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
             Trajet : <strong>{existingReservation?.bus?.trip?.departure} → {existingReservation?.bus?.trip?.destination}</strong><br/>
