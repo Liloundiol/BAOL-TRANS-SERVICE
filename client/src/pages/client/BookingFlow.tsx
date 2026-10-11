@@ -105,15 +105,10 @@ const BookingSummary: React.FC<{ seat: number, boarding: string, dropoff: string
       </div>
 
       <div className="payment-section" style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-        <h3 style={{ color: '#0B6E2E', marginBottom: '1rem' }}>Paiement Wave</h3>
-        <ol style={{ paddingLeft: '1.5rem', marginBottom: '1.5rem', color: '#374151' }}>
-          <li style={{ marginBottom: '0.5rem' }}>Cliquez sur le lien ci-dessous ou ouvrez votre application Wave</li>
-          <li style={{ marginBottom: '0.5rem' }}>Payez <strong>{trip.price} FCFA</strong> au numéro : <strong style={{color: '#111827', fontSize: '1.1em'}}>{import.meta.env.VITE_WAVE_MERCHANT_PHONE || '77 000 00 00'}</strong></li>
-        </ol>
-
         <Button 
           variant="primary" 
           fullWidth 
+          className="wave-pay-btn"
           onClick={() => {
             if (import.meta.env.VITE_WAVE_MERCHANT_LINK) {
               window.open(import.meta.env.VITE_WAVE_MERCHANT_LINK, '_blank');
