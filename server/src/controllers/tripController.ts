@@ -6,22 +6,25 @@ const tripCache = new NodeCache({ stdTTL: 30 }); // Cache de 30 secondes pour le
 
 export const getTrips = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { departure, destination, date, page = 1, limit = 50 } = req.query;
+    const { departure, destination, date, status, page = 1, limit = 50 } = req.query;
 
     const pageNumber = Number(page) || 1;
     const pageSize = Number(limit) || 50;
     const skip = (pageNumber - 1) * pageSize;
     
-    const cacheKey = `trips_${departure || 'all'}_${destination || 'all'}_${date || 'all'}_${pageNumber}_${pageSize}`;
+    const cacheKey = `trips_${departure || 'all'}_${destination || 'all'}_${date || 'all'}_${status || 'default'}_${pageNumber}_${pageSize}`;
     const cachedResponse = tripCache.get(cacheKey);
     
     if (cachedResponse) {
       return res.json(cachedResponse);
     }
 
-    const whereClause: any = {
-      status: 'ACTIVE'
-    };
+    const whereClause: any = {};
+    if (status && status !== 'ALL' && status !== 'all') {
+      whereClause.status = status as string;
+    } else if (!status) {
+      whereClause.status = 'ACTIVE';
+    }
 
     if (departure) {
       whereClause.departure = { contains: departure as string, mode: 'insensitive' };
@@ -163,6 +166,8 @@ export const createTrip = async (req: Request, res: Response, next: NextFunction
       return { trip: newTrip, bus: newBus };
     });
 
+    tripCache.flushAll();
+
     res.status(201).json({ 
       success: true, 
       trip: result.trip,
@@ -237,7 +242,7 @@ export const getTripById = async (req: Request, res: Response, next: NextFunctio
 export const updateTrip = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
-    const { departure, destination, date, time, price, boardingPoints, dropoffPoints } = req.body;
+    const { departure, destination, date, time, price, status, boardingPoints, dropoffPoints } = req.body;
 
     const trip = await prisma.trip.update({
       where: { id },
@@ -247,6 +252,7 @@ export const updateTrip = async (req: Request, res: Response, next: NextFunction
         date: date ? new Date(date) : undefined,
         time: time ? new Date(`${date?.split('T')[0] || new Date().toISOString().split('T')[0]}T${time}:00Z`) : undefined,
         price: price ? parseFloat(price) : undefined,
+        status: status ? status : undefined,
         boardingPoints: boardingPoints && Array.isArray(boardingPoints) ? {
           deleteMany: {},
           create: boardingPoints.map((bp: any) => ({
@@ -264,7 +270,46 @@ export const updateTrip = async (req: Request, res: Response, next: NextFunction
       }
     });
 
+    tripCache.flushAll();
+
     res.json({ success: true, trip });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const toggleTripStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+    const { status } = req.body;
+
+    const existingTrip = await prisma.trip.findUnique({
+      where: { id }
+    });
+
+    if (!existingTrip) {
+      return res.status(404).json({ success: false, error: 'Trajet non trouvé' });
+    }
+
+    // If explicit status provided, use it. Otherwise toggle between ACTIVE and CANCELLED
+    let newStatus = status;
+    if (!newStatus) {
+      newStatus = existingTrip.status === 'ACTIVE' ? 'CANCELLED' : 'ACTIVE';
+    }
+
+    const updatedTrip = await prisma.trip.update({
+      where: { id },
+      data: { status: newStatus }
+    });
+
+    tripCache.flushAll();
+
+    const isActivated = updatedTrip.status === 'ACTIVE';
+    res.json({
+      success: true,
+      trip: updatedTrip,
+      message: isActivated ? 'Le trajet a été activé avec succès.' : 'Le trajet a été désactivé avec succès.'
+    });
   } catch (error) {
     next(error);
   }
@@ -274,14 +319,49 @@ export const deleteTrip = async (req: Request, res: Response, next: NextFunction
   try {
     const id = req.params.id as string;
 
-    // Soft delete: Change status to ARCHIVED instead of deleting records
-    // This preserves all reservations, tickets, and financial data for history
-    await prisma.trip.update({
-      where: { id },
-      data: { status: 'ARCHIVED' }
-    });
+    // Check if trip has reservations or packages
+    const [reservationsCount, packagesCount] = await Promise.all([
+      prisma.reservation.count({
+        where: { bus: { tripId: id } }
+      }),
+      prisma.package.count({
+        where: { tripId: id }
+      })
+    ]);
 
-    res.json({ success: true, message: 'Le trajet a été archivé avec succès et l\'historique est conservé.' });
+    if (reservationsCount > 0 || packagesCount > 0) {
+      // Soft delete: Change status to ARCHIVED instead of deleting records
+      // This preserves all reservations, tickets, and financial data for history
+      const archivedTrip = await prisma.trip.update({
+        where: { id },
+        data: { status: 'ARCHIVED' }
+      });
+
+      tripCache.flushAll();
+
+      return res.json({ 
+        success: true, 
+        action: 'ARCHIVED',
+        trip: archivedTrip,
+        message: `Le trajet est associé à ${reservationsCount} réservation(s) et ${packagesCount} colis. Il a été archivé pour préserver l'historique et la comptabilité.` 
+      });
+    }
+
+    // No reservations or packages: safely delete buses and trip in transaction
+    await prisma.$transaction([
+      prisma.boardingPoint.deleteMany({ where: { tripId: id } }),
+      prisma.dropoffPoint.deleteMany({ where: { tripId: id } }),
+      prisma.bus.deleteMany({ where: { tripId: id } }),
+      prisma.trip.delete({ where: { id } })
+    ]);
+
+    tripCache.flushAll();
+
+    res.json({ 
+      success: true, 
+      action: 'DELETED',
+      message: 'Le trajet a été supprimé définitivement avec succès.' 
+    });
   } catch (error) {
     next(error);
   }
