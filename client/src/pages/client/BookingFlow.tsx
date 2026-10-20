@@ -273,8 +273,31 @@ const BookingFlow: React.FC = () => {
         </div>
       </Modal>
 
-      {!isLoading && step === 1 && trip && <DetailsSelection onNext={handleDetailsSelected} trip={trip} />}
-      {!isLoading && step === 2 && reservationData && (
+      {!isLoading && trip && trip.status !== 'ACTIVE' && (
+        <div style={{
+          margin: '2rem auto',
+          maxWidth: '480px',
+          padding: '2rem 1.5rem',
+          background: '#FFFBEB',
+          border: '1px solid #FCD34D',
+          borderRadius: '12px',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚠️</div>
+          <h3 style={{ color: '#B45309', margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>
+            Trajet temporairement indisponible
+          </h3>
+          <p style={{ color: '#78350F', fontSize: '0.92rem', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+            Ce trajet a été désactivé par l'administration BTS et n'est plus ouvert aux réservations.
+          </p>
+          <Button variant="primary" onClick={() => navigate('/search')}>
+            Rechercher un autre trajet
+          </Button>
+        </div>
+      )}
+
+      {!isLoading && step === 1 && trip && trip.status === 'ACTIVE' && <DetailsSelection onNext={handleDetailsSelected} trip={trip} />}
+      {!isLoading && step === 2 && reservationData && trip && trip.status === 'ACTIVE' && (
         <BookingSummary 
           seat={reservationData.seatNumber} 
           boarding={bookingPoints.boarding} 

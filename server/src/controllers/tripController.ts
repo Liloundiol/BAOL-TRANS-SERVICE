@@ -318,20 +318,40 @@ export const toggleTripStatus = async (req: Request, res: Response, next: NextFu
 export const deleteTrip = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
+    const force = req.query.force === 'true' || req.body?.force === true;
+    const action = req.query.action || req.body?.action;
 
-    // Check if trip has reservations or packages
-    const [reservationsCount, packagesCount] = await Promise.all([
-      prisma.reservation.count({
-        where: { bus: { tripId: id } }
+    // Check if trip exists
+    const trip = await prisma.trip.findUnique({
+      where: { id },
+      include: {
+        buses: { select: { id: true } },
+        packages: { select: { id: true } }
+      }
+    });
+
+    if (!trip) {
+      return res.status(404).json({ success: false, error: 'Trajet non trouvé' });
+    }
+
+    const busIds = trip.buses.map(b => b.id);
+    const packageIds = trip.packages.map(p => p.id);
+
+    const [reservations, packagesCount] = await Promise.all([
+      prisma.reservation.findMany({
+        where: { busId: { in: busIds } },
+        select: { id: true }
       }),
       prisma.package.count({
         where: { tripId: id }
       })
     ]);
 
-    if (reservationsCount > 0 || packagesCount > 0) {
-      // Soft delete: Change status to ARCHIVED instead of deleting records
-      // This preserves all reservations, tickets, and financial data for history
+    const reservationIds = reservations.map(r => r.id);
+    const reservationsCount = reservationIds.length;
+
+    // If explicit archive requested
+    if (action === 'ARCHIVE') {
       const archivedTrip = await prisma.trip.update({
         where: { id },
         data: { status: 'ARCHIVED' }
@@ -339,28 +359,76 @@ export const deleteTrip = async (req: Request, res: Response, next: NextFunction
 
       tripCache.flushAll();
 
-      return res.json({ 
-        success: true, 
+      return res.json({
+        success: true,
         action: 'ARCHIVED',
         trip: archivedTrip,
-        message: `Le trajet est associé à ${reservationsCount} réservation(s) et ${packagesCount} colis. Il a été archivé pour préserver l'historique et la comptabilité.` 
+        message: `Le trajet a été archivé avec succès (${reservationsCount} réservation(s) et ${packagesCount} colis conservés).`
       });
     }
 
-    // No reservations or packages: safely delete buses and trip in transaction
-    await prisma.$transaction([
-      prisma.boardingPoint.deleteMany({ where: { tripId: id } }),
-      prisma.dropoffPoint.deleteMany({ where: { tripId: id } }),
-      prisma.bus.deleteMany({ where: { tripId: id } }),
-      prisma.trip.delete({ where: { id } })
-    ]);
+    // If there are reservations or packages and force is NOT set
+    if (!force && (reservationsCount > 0 || packagesCount > 0)) {
+      return res.status(409).json({
+        success: false,
+        requiresConfirmation: true,
+        reservationsCount,
+        packagesCount,
+        error: `Ce trajet contient ${reservationsCount} réservation(s) et ${packagesCount} colis.`
+      });
+    }
+
+    // Force delete OR no dependent records: delete cascade safely
+    await prisma.$transaction(async (tx) => {
+      // 1. Delete complaints linked to packages
+      if (packageIds.length > 0) {
+        await tx.complaint.deleteMany({ where: { packageId: { in: packageIds } } });
+      }
+
+      // 2. Delete payments linked to reservations or packages
+      if (reservationIds.length > 0 || packageIds.length > 0) {
+        await tx.payment.deleteMany({
+          where: {
+            OR: [
+              ...(reservationIds.length > 0 ? [{ reservationId: { in: reservationIds } }] : []),
+              ...(packageIds.length > 0 ? [{ packageId: { in: packageIds } }] : [])
+            ]
+          }
+        });
+      }
+
+      // 3. Delete tickets linked to reservations
+      if (reservationIds.length > 0) {
+        await tx.ticket.deleteMany({ where: { reservationId: { in: reservationIds } } });
+      }
+
+      // 4. Delete reservations
+      if (reservationIds.length > 0) {
+        await tx.reservation.deleteMany({ where: { id: { in: reservationIds } } });
+      }
+
+      // 5. Delete packages
+      if (packageIds.length > 0) {
+        await tx.package.deleteMany({ where: { id: { in: packageIds } } });
+      }
+
+      // 6. Delete boarding points and dropoff points
+      await tx.boardingPoint.deleteMany({ where: { tripId: id } });
+      await tx.dropoffPoint.deleteMany({ where: { tripId: id } });
+
+      // 7. Delete buses
+      await tx.bus.deleteMany({ where: { tripId: id } });
+
+      // 8. Delete trip
+      await tx.trip.delete({ where: { id } });
+    });
 
     tripCache.flushAll();
 
-    res.json({ 
-      success: true, 
+    return res.json({
+      success: true,
       action: 'DELETED',
-      message: 'Le trajet a été supprimé définitivement avec succès.' 
+      message: 'Le trajet a été définitivement supprimé de la base de données.'
     });
   } catch (error) {
     next(error);

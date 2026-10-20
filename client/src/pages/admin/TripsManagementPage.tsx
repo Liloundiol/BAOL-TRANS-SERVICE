@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, X, Power, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Power, AlertTriangle, CheckCircle, Archive, ShieldAlert } from 'lucide-react';
 import { Button } from '../../components/shared/Button';
 import { Input } from '../../components/shared/Input';
 import { Select } from '../../components/shared/Select';
@@ -27,7 +27,9 @@ const TripsManagementPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusTab, setSelectedStatusTab] = useState<'ALL' | 'ACTIVE' | 'CANCELLED' | 'ARCHIVED'>('ALL');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
-  const [deletingTripId, setDeletingTripId] = useState<string | null>(null);
+  const [deletingTrip, setDeletingTrip] = useState<Trip | null>(null);
+  const [deleteConflict, setDeleteConflict] = useState<{ reservationsCount: number; packagesCount: number } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [togglingTripId, setTogglingTripId] = useState<string | null>(null);
 
@@ -116,7 +118,7 @@ const TripsManagementPage: React.FC = () => {
 
       setToastMessage({
         type: 'success',
-        text: response.message || (isCurrentlyActive ? 'Trajet désactivé avec succès.' : 'Trajet activé avec succès.')
+        text: response.message || (isCurrentlyActive ? 'Trajet désactivé avec succès (masqué aux clients).' : 'Trajet activé avec succès (visible aux clients).')
       });
       fetchTrips();
     } catch (error: any) {
@@ -129,21 +131,40 @@ const TripsManagementPage: React.FC = () => {
     }
   };
 
-  const handleDeleteTrip = async () => {
-    if (!deletingTripId) return;
+  const handleDeleteTrip = async (options?: { force?: boolean; action?: 'ARCHIVE' }) => {
+    if (!deletingTrip) return;
+    setIsDeleting(true);
     try {
-      const response = await apiFetch(`/trips/${deletingTripId}`, { method: 'DELETE' });
-      setDeletingTripId(null);
+      const queryParams = new URLSearchParams();
+      if (options?.force) queryParams.append('force', 'true');
+      if (options?.action) queryParams.append('action', options.action);
+
+      const queryStr = queryParams.toString() ? `?${queryParams.toString()}` : '';
+      const response = await apiFetch(`/trips/${deletingTrip.id}${queryStr}`, { method: 'DELETE' });
+
+      setDeletingTrip(null);
+      setDeleteConflict(null);
       setToastMessage({
         type: 'success',
-        text: response.message || 'Trajet supprimé ou archivé avec succès.'
+        text: response.message || 'Action effectuée avec succès.'
       });
       fetchTrips();
     } catch (error: any) {
-      setToastMessage({
-        type: 'error',
-        text: error.message || 'Erreur lors de la suppression'
-      });
+      if (error.status === 409 || error.requiresConfirmation || error.reservationsCount !== undefined) {
+        setDeleteConflict({
+          reservationsCount: error.reservationsCount || 0,
+          packagesCount: error.packagesCount || 0
+        });
+      } else {
+        setToastMessage({
+          type: 'error',
+          text: error.message || 'Erreur lors de la suppression'
+        });
+        setDeletingTrip(null);
+        setDeleteConflict(null);
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -344,6 +365,7 @@ const TripsManagementPage: React.FC = () => {
       header: 'Actions',
       accessor: (row) => {
         const isActive = row.status === 'ACTIVE';
+        const isArchived = row.status === 'ARCHIVED';
         const isToggling = togglingTripId === row.id;
 
         return (
@@ -370,7 +392,7 @@ const TripsManagementPage: React.FC = () => {
               title={isActive ? "Désactiver le trajet (masqué aux clients)" : "Activer le trajet (visible aux clients)"}
             >
               <Power size={14} />
-              {isActive ? 'Désactiver' : 'Activer'}
+              {isToggling ? '...' : isActive ? 'Désactiver' : isArchived ? 'Réactiver' : 'Activer'}
             </button>
 
             {/* Modifier Button */}
@@ -394,7 +416,10 @@ const TripsManagementPage: React.FC = () => {
 
             {/* Supprimer Button */}
             <button 
-              onClick={() => setDeletingTripId(row.id)}
+              onClick={() => {
+                setDeletingTrip(row);
+                setDeleteConflict(null);
+              }}
               style={{ 
                 padding: '0.45rem', 
                 background: '#FEF2F2', 
@@ -739,34 +764,144 @@ const TripsManagementPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* Modal de Confirmation de Suppression */}
+      {/* Modal de Confirmation de Suppression & Archivage */}
       <Modal 
-        isOpen={!!deletingTripId} 
-        onClose={() => setDeletingTripId(null)}
-        title="Supprimer ou archiver le trajet"
+        isOpen={!!deletingTrip} 
+        onClose={() => { if (!isDeleting) { setDeletingTrip(null); setDeleteConflict(null); } }}
+        title="Gestion de la suppression du trajet"
       >
-        <div style={{ padding: '0.5rem 0' }}>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-            <div style={{ background: '#FEE2E2', padding: '10px', borderRadius: '50%', color: '#EF4444', flexShrink: 0 }}>
-              <AlertTriangle size={24} />
+        {deletingTrip && (
+          <div style={{ padding: '0.5rem 0' }}>
+            {/* Header info */}
+            <div style={{
+              background: '#F9FAFB',
+              border: '1px solid #E5E7EB',
+              borderRadius: '8px',
+              padding: '0.85rem 1rem',
+              marginBottom: '1.25rem'
+            }}>
+              <div style={{ fontWeight: 600, fontSize: '1rem', color: '#111827' }}>
+                {deletingTrip.departure} ➔ {deletingTrip.destination}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: '#6B7280', marginTop: '4px', display: 'flex', gap: '12px' }}>
+                <span>📅 {formatSafeDate(deletingTrip.date)}</span>
+                <span>🕒 {formatSafeTime(deletingTrip.time)}</span>
+                <span>💰 {Number(deletingTrip.price || 0).toLocaleString('fr-FR')} FCFA</span>
+              </div>
             </div>
-            <div>
-              <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text)', fontSize: '1rem' }}>
-                Confirmation d'action
-              </h4>
-              <p style={{ color: '#4B5563', fontSize: '0.9rem', lineHeight: '1.5', margin: '0 0 0.5rem 0' }}>
-                • <strong>Suppression définitive :</strong> si aucune réservation ni colis n'est associé à ce trajet, il sera retiré de la base de données.
-              </p>
-              <p style={{ color: '#4B5563', fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
-                • <strong>Archivage automatique :</strong> si des réservations ou colis existent déjà, le trajet sera automatiquement archivé pour sécuriser les billets et l'historique comptable.
-              </p>
-            </div>
+
+            {deleteConflict ? (
+              <div>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', background: '#FEF3C7', border: '1px solid #F59E0B', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem' }}>
+                  <AlertTriangle size={22} style={{ color: '#D97706', flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <h4 style={{ margin: '0 0 0.35rem 0', color: '#92400E', fontSize: '0.95rem' }}>
+                      Données associées détectées
+                    </h4>
+                    <p style={{ margin: 0, color: '#78350F', fontSize: '0.85rem', lineHeight: '1.45' }}>
+                      Ce trajet est lié à <strong>{deleteConflict.reservationsCount} réservation(s)</strong> et <strong>{deleteConflict.packagesCount} colis</strong>.
+                      <br />
+                      Pour préserver la comptabilité et les billets des étudiants, nous vous recommandons d'<strong>archiver</strong> ce trajet au lieu de le détruire.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
+                  <Button 
+                    variant="primary" 
+                    fullWidth 
+                    disabled={isDeleting}
+                    onClick={() => handleDeleteTrip({ action: 'ARCHIVE' })}
+                  >
+                    <Archive size={16} style={{ marginRight: '8px' }} />
+                    {isDeleting ? 'Archivage en cours...' : 'Archiver le trajet (Recommandé)'}
+                  </Button>
+
+                  <Button 
+                    variant="danger" 
+                    fullWidth 
+                    disabled={isDeleting}
+                    onClick={() => handleDeleteTrip({ force: true })}
+                  >
+                    <Trash2 size={16} style={{ marginRight: '8px' }} />
+                    {isDeleting ? 'Suppression en cours...' : 'Supprimer définitivement (efface toutes les données associées)'}
+                  </Button>
+
+                  <Button 
+                    variant="secondary" 
+                    fullWidth 
+                    disabled={isDeleting}
+                    onClick={() => { setDeletingTrip(null); setDeleteConflict(null); }}
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                  <div style={{ background: '#FEE2E2', padding: '10px', borderRadius: '50%', color: '#EF4444', flexShrink: 0 }}>
+                    <AlertTriangle size={24} />
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text)', fontSize: '1rem' }}>
+                      Que souhaitez-vous faire avec ce trajet ?
+                    </h4>
+                    <p style={{ color: '#4B5563', fontSize: '0.88rem', lineHeight: '1.5', margin: '0 0 0.5rem 0' }}>
+                      • <strong>Désactiver :</strong> si vous souhaitez simplement stopper temporairement les réservations publiques sans rien effacer.
+                    </p>
+                    <p style={{ color: '#4B5563', fontSize: '0.88rem', lineHeight: '1.5', margin: '0 0 0.5rem 0' }}>
+                      • <strong>Archiver :</strong> retire le trajet de la liste active tout en conservant l'historique financier.
+                    </p>
+                    <p style={{ color: '#4B5563', fontSize: '0.88rem', lineHeight: '1.5', margin: 0 }}>
+                      • <strong>Supprimer définitivement :</strong> supprime le trajet de la base de données.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                  <Button variant="secondary" disabled={isDeleting} onClick={() => setDeletingTrip(null)}>
+                    Annuler
+                  </Button>
+
+                  {deletingTrip.status === 'ACTIVE' && (
+                    <Button 
+                      variant="outline" 
+                      disabled={isDeleting} 
+                      onClick={async () => {
+                        const tripToToggle = deletingTrip;
+                        setDeletingTrip(null);
+                        await handleToggleStatus(tripToToggle);
+                      }}
+                      style={{ borderColor: '#F59E0B', color: '#B45309' }}
+                    >
+                      <Power size={15} style={{ marginRight: '6px' }} />
+                      Désactiver uniquement
+                    </Button>
+                  )}
+
+                  <Button 
+                    variant="outline" 
+                    disabled={isDeleting} 
+                    onClick={() => handleDeleteTrip({ action: 'ARCHIVE' })}
+                  >
+                    <Archive size={15} style={{ marginRight: '6px' }} />
+                    Archiver
+                  </Button>
+
+                  <Button 
+                    variant="danger" 
+                    disabled={isDeleting} 
+                    onClick={() => handleDeleteTrip()}
+                  >
+                    <Trash2 size={15} style={{ marginRight: '6px' }} />
+                    {isDeleting ? 'Suppression...' : 'Supprimer définitivement'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
-          <div style={{ marginTop: '1.75rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            <Button variant="secondary" onClick={() => setDeletingTripId(null)}>Annuler</Button>
-            <Button variant="danger" onClick={handleDeleteTrip}>Confirmer</Button>
-          </div>
-        </div>
+        )}
       </Modal>
     </div>
   );

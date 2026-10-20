@@ -9,6 +9,7 @@ const prisma_1 = __importDefault(require("../config/prisma"));
 const getUsers = async (req, res) => {
     try {
         const users = await prisma_1.default.user.findMany({
+            take: 100, // Added to improve performance
             select: {
                 id: true,
                 phoneNumber: true,

@@ -30,7 +30,13 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   }
 
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Une erreur est survenue');
+    const error: any = new Error(data.error || data.message || 'Une erreur est survenue');
+    error.status = response.status;
+    error.data = data;
+    error.reservationsCount = data.reservationsCount;
+    error.packagesCount = data.packagesCount;
+    error.requiresConfirmation = data.requiresConfirmation;
+    throw error;
   }
 
   return data;

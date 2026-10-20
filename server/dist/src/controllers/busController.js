@@ -14,7 +14,7 @@ const getAllBuses = async (req, res, next) => {
             include: {
                 trip: true,
                 reservations: {
-                    where: { status: { not: 'CANCELLED' } }
+                    where: { status: 'PAID' }
                 }
             },
             orderBy: {
